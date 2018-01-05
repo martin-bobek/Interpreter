@@ -4,6 +4,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <sstream>
 
 using std::move;
 
@@ -426,7 +427,31 @@ namespace End
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
 }
 
-
+int main()
+{
+	while (true)
+	{
+		Lexer lexer(std::cin);
+		bool accepted = lexer.CreateTokens();
+		std::cin.clear();
+		std::cin.ignore();
+		if (!accepted)
+		{
+			Lexer::Error err = lexer.GetErrorReport();
+			std::cout << "Error: " << err.Token << std::endl;
+			continue;
+		}
+		Parser parser(lexer.GetTokens());
+		if (!parser.CreateTree())
+		{
+			Parser::Error err = parser.GetErrorReport();
+			std::cout << "Error in " << err.Location << ": " << err.Message << std::endl;
+			continue;
+		}
+		pStat1 tree = parser.GetTree();
+		std::cout << "Input accepted" << std::endl;
+	}
+}
 
 bool Parser::CreateTree()
 {
