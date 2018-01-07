@@ -111,6 +111,7 @@ private:
 	static Type State_12(Iterator &it, Iterator end);
 	static Type State_13(Iterator &it, Iterator end);
 	static Type State_14(Iterator &it, Iterator end);
+	static Type State_15(Iterator &it, Iterator end);
 
 	std::istream &in;
 	std::vector<pTerminal> tokens;
@@ -127,6 +128,7 @@ public:
 	Value operator-(Value rhs) const;
 	Value operator*(Value rhs) const;
 	Value operator/(Value rhs) const;
+	Value operator-() const;
 	void PrintType(std::ostream &out) const { out << (type == INT ? "int" : "double"); }
 	void PrintValue(std::ostream &out) const { out << (type == INT ? vInt : vDouble); }
 private:
@@ -357,6 +359,15 @@ public:
 	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pName symbol_1;
+};
+class Exp9 : public Exp
+{
+public:
+	Exp9(pSub &&sym1, pExp &&sym2) : symbol_1(move(sym1)), symbol_2(move(sym2)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pSub symbol_1;
+	const pExp symbol_2;
 };
 class Terminal : public Symbol
 {
@@ -651,6 +662,13 @@ std::tuple<pCompilerError, Value> Exp8::Evaluate(SymTable &syms) const
 {
 	return syms.Get(symbol_1->Value());
 }
+std::tuple<pCompilerError, Value> Exp9::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = symbol_2->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return { pCompilerError(CompilerError::NoError), -value };
+}
 
 bool Parser::CreateTree()
 {
@@ -703,28 +721,31 @@ bool Exp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 	switch (stack.top())
 	{
 	case 9:
-		stack.push(18);
+		stack.push(19);
 		break;
 	case 13:
-		stack.push(21);
-		break;
-	case 15:
 		stack.push(22);
 		break;
-	case 20:
-		stack.push(28);
+	case 15:
+		stack.push(23);
 		break;
-	case 24:
-		stack.push(31);
+	case 16:
+		stack.push(24);
 		break;
-	case 25:
-		stack.push(32);
+	case 21:
+		stack.push(30);
 		break;
 	case 26:
 		stack.push(33);
 		break;
 	case 27:
 		stack.push(34);
+		break;
+	case 28:
+		stack.push(35);
+		break;
+	case 29:
+		stack.push(36);
 		break;
 	default:
 		err = { "Exp::Process", "Syntax Error!" };
@@ -783,7 +804,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -797,7 +818,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -814,7 +835,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -834,7 +855,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -910,7 +931,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -924,7 +945,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -941,7 +962,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -961,7 +982,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -1038,7 +1059,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -1052,7 +1073,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -1069,7 +1090,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -1089,7 +1110,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -1147,11 +1168,12 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 9:
 	case 13:
 	case 15:
-	case 20:
-	case 24:
-	case 25:
+	case 16:
+	case 21:
 	case 26:
 	case 27:
+	case 28:
+	case 29:
 		stack.push(14);
 		break;
 	case 11:
@@ -1182,7 +1204,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -1196,7 +1218,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -1213,7 +1235,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -1233,7 +1255,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -1267,7 +1289,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.push(12);
 		break;
 	case 10:
-		stack.push(19);
+		stack.push(20);
 		break;
 	case 14:
 	{
@@ -1277,7 +1299,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1285,7 +1307,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1293,16 +1315,27 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-		stack.push(23);
+	case 19:
+		stack.push(25);
 		break;
-	case 21:
-		stack.push(29);
+	case 22:
+		stack.push(31);
 		break;
-	case 28:
-		stack.push(35);
-		break;
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
 	case 30:
+		stack.push(37);
+		break;
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1316,7 +1349,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 31:
+	case 33:
 	{
 		stack.pop();
 		stack.pop();
@@ -1330,7 +1363,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
+	case 34:
 	{
 		stack.pop();
 		stack.pop();
@@ -1344,7 +1377,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1358,7 +1391,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1429,7 +1462,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -1443,7 +1476,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -1460,7 +1493,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -1480,7 +1513,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -1517,7 +1550,7 @@ bool Assign::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.push(13);
 		break;
 	case 10:
-		stack.push(20);
+		stack.push(21);
 		break;
 	default:
 		err = { "Assign::Process", "Syntax Error!" };
@@ -1537,7 +1570,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1545,7 +1578,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1553,13 +1586,24 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-	case 21:
+	case 19:
 	case 22:
-	case 28:
-		stack.push(24);
-		break;
+	case 24:
 	case 30:
+		stack.push(26);
+		break;
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1573,7 +1617,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 31:
+	case 33:
 	{
 		stack.pop();
 		stack.pop();
@@ -1587,7 +1631,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
+	case 34:
 	{
 		stack.pop();
 		stack.pop();
@@ -1601,7 +1645,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1615,7 +1659,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1639,6 +1683,17 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
 	{
+	case 9:
+	case 13:
+	case 15:
+	case 16:
+	case 21:
+	case 26:
+	case 27:
+	case 28:
+	case 29:
+		stack.push(15);
+		break;
 	case 14:
 	{
 		stack.pop();
@@ -1647,7 +1702,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1655,7 +1710,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1663,13 +1718,24 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-	case 21:
+	case 19:
 	case 22:
-	case 28:
-		stack.push(25);
-		break;
+	case 24:
 	case 30:
+		stack.push(27);
+		break;
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1683,7 +1749,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 31:
+	case 33:
 	{
 		stack.pop();
 		stack.pop();
@@ -1697,7 +1763,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
+	case 34:
 	{
 		stack.pop();
 		stack.pop();
@@ -1711,7 +1777,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1725,7 +1791,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1757,7 +1823,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1765,7 +1831,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1773,15 +1839,26 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-	case 21:
+	case 19:
 	case 22:
-	case 28:
-	case 31:
-	case 32:
-		stack.push(26);
-		break;
+	case 24:
 	case 30:
+	case 33:
+	case 34:
+		stack.push(28);
+		break;
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1795,7 +1872,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1809,7 +1886,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1841,7 +1918,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1849,7 +1926,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1857,15 +1934,26 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-	case 21:
+	case 19:
 	case 22:
-	case 28:
-	case 31:
-	case 32:
-		stack.push(27);
-		break;
+	case 24:
 	case 30:
+	case 33:
+	case 34:
+		stack.push(29);
+		break;
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1879,7 +1967,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1893,7 +1981,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1920,12 +2008,13 @@ bool OpenP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 9:
 	case 13:
 	case 15:
-	case 20:
-	case 24:
-	case 25:
+	case 16:
+	case 21:
 	case 26:
 	case 27:
-		stack.push(15);
+	case 28:
+	case 29:
+		stack.push(16);
 		break;
 	default:
 		err = { "OpenP::Process", "Syntax Error!" };
@@ -1945,7 +2034,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp8(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 16:
+	case 17:
 	{
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
@@ -1953,7 +2042,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp6(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 17:
+	case 18:
 	{
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
@@ -1961,10 +2050,21 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 22:
-		stack.push(30);
+	case 23:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 24:
+		stack.push(32);
 		break;
-	case 30:
+	case 32:
 	{
 		stack.pop();
 		stack.pop();
@@ -1978,7 +2078,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 31:
+	case 33:
 	{
 		stack.pop();
 		stack.pop();
@@ -1992,7 +2092,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
+	case 34:
 	{
 		stack.pop();
 		stack.pop();
@@ -2006,7 +2106,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -2020,7 +2120,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 34:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -2047,12 +2147,13 @@ bool IntL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 9:
 	case 13:
 	case 15:
-	case 20:
-	case 24:
-	case 25:
+	case 16:
+	case 21:
 	case 26:
 	case 27:
-		stack.push(16);
+	case 28:
+	case 29:
+		stack.push(17);
 		break;
 	default:
 		err = { "IntL::Process", "Syntax Error!" };
@@ -2067,12 +2168,13 @@ bool DoubleL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 	case 9:
 	case 13:
 	case 15:
-	case 20:
-	case 24:
-	case 25:
+	case 16:
+	case 21:
 	case 26:
 	case 27:
-		stack.push(17);
+	case 28:
+	case 29:
+		stack.push(18);
 		break;
 	default:
 		err = { "DoubleL::Process", "Syntax Error!" };
@@ -2129,7 +2231,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
+	case 20:
 	{
 		stack.pop();
 		stack.pop();
@@ -2143,7 +2245,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 25:
 	{
 		stack.pop();
 		stack.pop();
@@ -2160,7 +2262,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 29:
+	case 31:
 	{
 		stack.pop();
 		stack.pop();
@@ -2180,7 +2282,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 35:
+	case 37:
 	{
 		stack.pop();
 		stack.pop();
@@ -2279,7 +2381,7 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		switch (*it++)
 		{
 		case 'i':
-			return State_6(it, end);
+			return State_7(it, end);
 		case 'n':
 		case 't':
 		case 'o':
@@ -2331,9 +2433,9 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			return State_10(it, end);
+			return State_11(it, end);
 		case 'd':
-			return State_14(it, end);
+			return State_15(it, end);
 		case ';':
 			return TERM;
 		case '(':
@@ -2349,7 +2451,7 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case '+':
 			return ADD;
 		case '-':
-			return SUB;
+			return State_4(it, end);
 		case '*':
 			return MULT;
 		case '/':
@@ -2364,9 +2466,9 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			return State_4(it, end);
+			return State_5(it, end);
 		case '.':
-			return State_7(it, end);
+			return State_8(it, end);
 		}
 	}
 	return INVALID;
@@ -2442,7 +2544,7 @@ Lexer::Type Lexer::State_2(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -2523,7 +2625,7 @@ Lexer::Type Lexer::State_3(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -2551,9 +2653,6 @@ Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			contValid = State_4(cont, end);
-			break;
-		case '.':
 			contValid = State_5(cont, end);
 			break;
 		}
@@ -2562,7 +2661,7 @@ Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 			return contValid;
 		}
 	}
-	return INTL;
+	return SUB;
 }
 Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
 {
@@ -2584,6 +2683,37 @@ Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
 		case '9':
 			contValid = State_5(cont, end);
 			break;
+		case '.':
+			contValid = State_6(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return INTL;
+}
+Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			contValid = State_6(cont, end);
+			break;
 		}
 		if (contValid != INVALID) {
 			it = cont;
@@ -2592,7 +2722,7 @@ Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
 	}
 	return DOUBLEL;
 }
-Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -2662,10 +2792,10 @@ Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		case 'n':
-			contValid = State_8(cont, end);
+			contValid = State_9(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -2675,7 +2805,7 @@ Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
 	}
 	return NAME;
 }
-Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -2691,93 +2821,10 @@ Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			return State_5(it, end);
+			return State_6(it, end);
 		}
 	}
 	return INVALID;
-}
-Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
-{
-	if (it != end)
-	{
-		Iterator cont = it;
-		Type contValid = INVALID;
-		switch (*cont++)
-		{
-		case 'i':
-		case 'n':
-		case 'd':
-		case 'o':
-		case 'u':
-		case 'b':
-		case 'l':
-		case 'e':
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case 'a':
-		case 'c':
-		case 'f':
-		case 'g':
-		case 'h':
-		case 'j':
-		case 'k':
-		case 'm':
-		case 'p':
-		case 'q':
-		case 'r':
-		case 's':
-		case 'v':
-		case 'w':
-		case 'x':
-		case 'y':
-		case 'z':
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-		case 'G':
-		case 'H':
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		case 'Q':
-		case 'R':
-		case 'S':
-		case 'T':
-		case 'U':
-		case 'V':
-		case 'W':
-		case 'X':
-		case 'Y':
-		case 'Z':
-		case '_':
-			contValid = State_10(cont, end);
-			break;
-		case 't':
-			contValid = State_2(cont, end);
-			break;
-		}
-		if (contValid != INVALID) {
-			it = cont;
-			return contValid;
-		}
-	}
-	return NAME;
 }
 Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 {
@@ -2789,12 +2836,12 @@ Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 		{
 		case 'i':
 		case 'n':
-		case 't':
 		case 'd':
 		case 'o':
 		case 'u':
 		case 'b':
 		case 'l':
+		case 'e':
 		case '0':
 		case '1':
 		case '2':
@@ -2849,10 +2896,10 @@ Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
-		case 'e':
-			contValid = State_3(cont, end);
+		case 't':
+			contValid = State_2(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -2878,7 +2925,6 @@ Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
 		case 'u':
 		case 'b':
 		case 'l':
-		case 'e':
 		case '0':
 		case '1':
 		case '2':
@@ -2933,7 +2979,10 @@ Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
+			break;
+		case 'e':
+			contValid = State_3(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -2958,6 +3007,7 @@ Lexer::Type Lexer::State_11(Iterator &it, Iterator end)
 		case 'o':
 		case 'u':
 		case 'b':
+		case 'l':
 		case 'e':
 		case '0':
 		case '1':
@@ -3013,10 +3063,7 @@ Lexer::Type Lexer::State_11(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
-			break;
-		case 'l':
-			contValid = State_9(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -3040,7 +3087,7 @@ Lexer::Type Lexer::State_12(Iterator &it, Iterator end)
 		case 'd':
 		case 'o':
 		case 'u':
-		case 'l':
+		case 'b':
 		case 'e':
 		case '0':
 		case '1':
@@ -3096,10 +3143,10 @@ Lexer::Type Lexer::State_12(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
-			break;
-		case 'b':
 			contValid = State_11(cont, end);
+			break;
+		case 'l':
+			contValid = State_10(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -3122,6 +3169,89 @@ Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 		case 't':
 		case 'd':
 		case 'o':
+		case 'u':
+		case 'l':
+		case 'e':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'a':
+		case 'c':
+		case 'f':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'r':
+		case 's':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_11(cont, end);
+			break;
+		case 'b':
+			contValid = State_12(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_14(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'o':
 		case 'b':
 		case 'l':
 		case 'e':
@@ -3179,10 +3309,10 @@ Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		case 'u':
-			contValid = State_12(cont, end);
+			contValid = State_13(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -3192,7 +3322,7 @@ Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 	}
 	return NAME;
 }
-Lexer::Type Lexer::State_14(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_15(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -3262,10 +3392,10 @@ Lexer::Type Lexer::State_14(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_10(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		case 'o':
-			contValid = State_13(cont, end);
+			contValid = State_14(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -3379,4 +3509,8 @@ Value Value::operator*(Value rhs) const
 Value Value::operator/(Value rhs) const
 {
 	return (type == INT ? vInt : vDouble) / (rhs.type == INT ? rhs.vInt : rhs.vDouble);
+}
+Value Value::operator-() const
+{
+	return (type == INT ? -vInt : -vDouble);
 }
