@@ -5,9 +5,13 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <type_traits>
+#include <tuple>
 
 using std::move;
 
+class CompilerError;
+class SymTable;
 class Symbol;
 class Stat1;
 class Stat2;
@@ -29,6 +33,7 @@ class CloseP;
 class IntL;
 class DoubleL;
 
+typedef std::unique_ptr<CompilerError> pCompilerError;
 typedef std::unique_ptr<Symbol> pSymbol;
 typedef std::unique_ptr<Stat1> pStat1;
 typedef std::unique_ptr<Stat2> pStat2;
@@ -111,6 +116,63 @@ private:
 	std::vector<pTerminal> tokens;
 	Error err;
 };
+class Value
+{
+public:
+	template<typename T> static Value Create(T value);
+	static Value Create() { return 0; }
+	template<typename T> static Value Cast(Value value);
+	void Assign(Value value);
+	Value operator+(Value rhs) const;
+	Value operator-(Value rhs) const;
+	Value operator*(Value rhs) const;
+	Value operator/(Value rhs) const;
+	void PrintType(std::ostream &out) const { out << (type == INT ? "int" : "double"); }
+	void PrintValue(std::ostream &out) const { out << (type == INT ? vInt : vDouble); }
+private:
+	enum Type { INT, DOUBLE };
+	Value(int value) : type(INT), vInt(value) {}
+	Value(double value) : type(DOUBLE), vDouble(value) {}
+	const Type type;
+	union {
+		double vDouble;
+		int vInt;
+	};
+};
+class SymTable
+{
+public:
+	void Print(std::ostream &out) const;
+	void EnterScope();
+	void ExitScope(); // function will fail if a scope has not previously been entered
+	template<typename T> pCompilerError Declare(const std::string &name);
+	template<typename T> pCompilerError Initialize(const std::string &name, Value value);
+	pCompilerError Assign(const std::string &name, Value value);
+	std::tuple<pCompilerError, Value> Get(const std::string &name) const;
+private:
+	bool inCurrentScope(const std::string &name) const;
+	struct Variable
+	{
+		Variable(const std::string &name = std::string(), Value value = Value::Create()) : name(name), value(value) {}
+		bool ScopeMarker() const { return name.empty(); }
+		std::string name;
+		Value value;
+	};
+	std::vector<Variable> stack;
+};
+class CompilerError
+{
+public:
+	static constexpr CompilerError *NoError = nullptr;
+	static pCompilerError New(std::string &&location, std::string &&message) { return pCompilerError(new CompilerError(move(location), move(message))); }
+	CompilerError() = delete;
+	const std::string &Location() const { return location; }
+	const std::string &Message() const { return message; }
+private:
+	CompilerError(std::string &&location, std::string &&message) : location(location), message(message) {}
+	std::string location;
+	std::string message;
+};
 
 class Symbol
 {
@@ -123,12 +185,14 @@ class Stat1 : public Symbol
 public:
 	virtual ~Stat1() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual pCompilerError Evaluate(SymTable &syms) const = 0;
 };
 Stat1::~Stat1() = default;
 class Stat11 : public Stat1
 {
 public:
 	Stat11(pStat1 &&sym1, pStat2 &&sym2) : symbol_1(move(sym1)), symbol_2(move(sym2)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pStat1 symbol_1;
 	const pStat2 symbol_2;
@@ -137,18 +201,21 @@ class Stat12 : public Stat1
 {
 public:
 	Stat12() = default;
+	pCompilerError Evaluate(SymTable &syms) const;
 };
 class Stat2 : public Symbol
 {
 public:
 	virtual ~Stat2() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual pCompilerError Evaluate(SymTable &syms) const = 0;
 };
 Stat2::~Stat2() = default;
 class Stat21 : public Stat2
 {
 public:
 	Stat21(pOpenB &&sym1, pStat1 &&sym2, pCloseB &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pOpenB symbol_1;
 	const pStat1 symbol_2;
@@ -158,6 +225,7 @@ class Stat22 : public Stat2
 {
 public:
 	Stat22(pIntT &&sym1, pName &&sym2, pTerm &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIntT symbol_1;
 	const pName symbol_2;
@@ -167,6 +235,7 @@ class Stat23 : public Stat2
 {
 public:
 	Stat23(pDoubleT &&sym1, pName &&sym2, pTerm &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pDoubleT symbol_1;
 	const pName symbol_2;
@@ -176,6 +245,7 @@ class Stat24 : public Stat2
 {
 public:
 	Stat24(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIntT symbol_1;
 	const pName symbol_2;
@@ -187,6 +257,7 @@ class Stat25 : public Stat2
 {
 public:
 	Stat25(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pDoubleT symbol_1;
 	const pName symbol_2;
@@ -198,6 +269,7 @@ class Stat26 : public Stat2
 {
 public:
 	Stat26(pName &&sym1, pAssign &&sym2, pExp &&sym3, pTerm &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pName symbol_1;
 	const pAssign symbol_2;
@@ -209,12 +281,14 @@ class Exp : public Symbol
 public:
 	virtual ~Exp() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
 };
 Exp::~Exp() = default;
 class Exp1 : public Exp
 {
 public:
 	Exp1(pExp &&sym1, pAdd &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pExp symbol_1;
 	const pAdd symbol_2;
@@ -224,6 +298,7 @@ class Exp2 : public Exp
 {
 public:
 	Exp2(pExp &&sym1, pSub &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pExp symbol_1;
 	const pSub symbol_2;
@@ -233,6 +308,7 @@ class Exp3 : public Exp
 {
 public:
 	Exp3(pExp &&sym1, pMult &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pExp symbol_1;
 	const pMult symbol_2;
@@ -242,6 +318,7 @@ class Exp4 : public Exp
 {
 public:
 	Exp4(pExp &&sym1, pDiv &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pExp symbol_1;
 	const pDiv symbol_2;
@@ -251,6 +328,7 @@ class Exp5 : public Exp
 {
 public:
 	Exp5(pOpenP &&sym1, pExp &&sym2, pCloseP &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pOpenP symbol_1;
 	const pExp symbol_2;
@@ -260,6 +338,7 @@ class Exp6 : public Exp
 {
 public:
 	Exp6(pIntL &&sym1) : symbol_1(move(sym1)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pIntL symbol_1;
 };
@@ -267,6 +346,7 @@ class Exp7 : public Exp
 {
 public:
 	Exp7(pDoubleL &&sym1) : symbol_1(move(sym1)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pDoubleL symbol_1;
 };
@@ -274,6 +354,7 @@ class Exp8 : public Exp
 {
 public:
 	Exp8(pName &&sym1) : symbol_1(move(sym1)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pName symbol_1;
 };
@@ -400,6 +481,7 @@ class IntL : public Terminal
 public:
 	IntL(std::string &&value) : value(move(value)) {}
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+	int Value() const { return std::stoi(value); }
 private:
 	std::ostream &print(std::ostream &os) const { return os << "INTL[" << value << ']'; }
 	const std::string value;
@@ -409,6 +491,7 @@ class DoubleL : public Terminal
 public:
 	DoubleL(std::string &&value) : value(move(value)) {}
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+	double Value() const { return std::stod(value); }
 private:
 	std::ostream &print(std::ostream &os) const { return os << "DOUBLEL[" << value << ']'; }
 	const std::string value;
@@ -418,6 +501,7 @@ class Name : public Terminal
 public:
 	Name(std::string &&value) : value(move(value)) {}
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+	const std::string &Value() const { return value; }
 private:
 	std::ostream &print(std::ostream &os) const { return os << "NAME[" << value << ']'; }
 	const std::string value;
@@ -431,6 +515,7 @@ int main()
 {
 	while (true)
 	{
+		std::cout << "Enter input:" << std::endl;
 		Lexer lexer(std::cin);
 		bool accepted = lexer.CreateTokens();
 		std::cin.clear();
@@ -449,8 +534,122 @@ int main()
 			continue;
 		}
 		pStat1 tree = parser.GetTree();
-		std::cout << "Input accepted" << std::endl;
+		SymTable syms;
+		pCompilerError error = tree->Evaluate(syms);
+		if (error)
+		{
+			std::cout << "Error in " << error->Location() << ": " << error->Message() << std::endl;
+			continue;
+		}
+		std::cout << "Input accepted!" << std::endl;
+		syms.Print(std::cout);
+		std::cout << std::endl;
 	}
+}
+
+pCompilerError Stat11::Evaluate(SymTable &syms) const
+{
+	pCompilerError error = symbol_1->Evaluate(syms);
+	if (error)
+		return error;
+	return symbol_2->Evaluate(syms);
+}
+pCompilerError Stat12::Evaluate(SymTable &syms) const
+{
+	return pCompilerError(CompilerError::NoError);
+}
+pCompilerError Stat21::Evaluate(SymTable &syms) const
+{
+	syms.EnterScope();
+	pCompilerError error = symbol_2->Evaluate(syms);
+	syms.ExitScope();
+	return error;
+}
+pCompilerError Stat22::Evaluate(SymTable &syms) const
+{
+	return syms.Declare<int>(symbol_2->Value());
+}
+pCompilerError Stat23::Evaluate(SymTable &syms) const
+{
+	return syms.Declare<double>(symbol_2->Value());
+}
+pCompilerError Stat24::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = symbol_4->Evaluate(syms);
+	if (error)
+		return move(error);
+	return syms.Initialize<int>(symbol_2->Value(), value);
+}
+pCompilerError Stat25::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = symbol_4->Evaluate(syms);
+	if (error)
+		return move(error);
+	return syms.Initialize<double>(symbol_2->Value(), value);
+}
+pCompilerError Stat26::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = symbol_3->Evaluate(syms);
+	if (error)
+		return move(error);
+	return syms.Assign(symbol_1->Value(), value);
+}
+std::tuple<pCompilerError, Value> Exp1::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	return { pCompilerError(CompilerError::NoError), valueL + valueR };
+
+}
+std::tuple<pCompilerError, Value> Exp2::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	return { pCompilerError(CompilerError::NoError), valueL - valueR };
+}
+std::tuple<pCompilerError, Value> Exp3::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	return { pCompilerError(CompilerError::NoError), valueL * valueR };
+}
+std::tuple<pCompilerError, Value> Exp4::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	return { pCompilerError(CompilerError::NoError), valueL / valueR };
+}
+std::tuple<pCompilerError, Value> Exp5::Evaluate(SymTable &syms) const
+{
+	return symbol_2->Evaluate(syms);
+}
+std::tuple<pCompilerError, Value> Exp6::Evaluate(SymTable &syms) const
+{
+	return { pCompilerError(CompilerError::NoError), Value::Create(symbol_1->Value()) };
+}
+std::tuple<pCompilerError, Value> Exp7::Evaluate(SymTable &syms) const
+{
+	return { pCompilerError(CompilerError::NoError), Value::Create(symbol_1->Value()) };
+}
+std::tuple<pCompilerError, Value> Exp8::Evaluate(SymTable &syms) const
+{
+	return syms.Get(symbol_1->Value());
 }
 
 bool Parser::CreateTree()
@@ -3075,4 +3274,109 @@ Lexer::Type Lexer::State_14(Iterator &it, Iterator end)
 		}
 	}
 	return NAME;
+}
+
+void SymTable::Print(std::ostream &out) const
+{
+	for (const Variable &var : stack)
+	{
+		var.value.PrintType(out);
+		out << ' ' << var.name << " = ";
+		var.value.PrintValue(out);
+		out << std::endl;
+	}
+}
+void SymTable::EnterScope()
+{
+	stack.emplace_back();	// pushes an empty Variable object, which indicates a new scope;
+}
+void SymTable::ExitScope()
+{
+	while (!stack.back().ScopeMarker()) // pops the stack until an empty object is found and then pops the empty marker.
+		stack.pop_back();
+	stack.pop_back();
+}
+template<typename T> pCompilerError SymTable::Declare(const std::string &name)
+{
+	if (inCurrentScope(name))
+		return CompilerError::New("SymTable::Declare", name + " is already used in the current scope.");
+	stack.emplace_back(name, Value::Create<T>(0));
+	return pCompilerError(CompilerError::NoError);
+}
+template<typename T> pCompilerError SymTable::Initialize(const std::string &name, Value value)
+{
+	if (inCurrentScope(name))
+		return CompilerError::New("SymTable::Declare", name + " is already used in the current scope.");
+	stack.emplace_back(name, Value::Cast<T>(value));
+	return pCompilerError(CompilerError::NoError);
+}
+pCompilerError SymTable::Assign(const std::string &name, Value value)
+{
+	for (auto it = stack.rbegin(); it != stack.rend(); it++)
+	{
+		if (it->name == name)
+		{
+			it->value.Assign(value);
+			return pCompilerError(CompilerError::NoError);
+		}
+	}
+	return CompilerError::New("SymTable::Assign", name + " is not defined.");
+}
+std::tuple<pCompilerError, Value> SymTable::Get(const std::string &name) const
+{
+	for (auto it = stack.rbegin(); it != stack.rend(); it++)
+		if (it->name == name)
+			return { pCompilerError(CompilerError::NoError), it->value };
+	return { CompilerError::New("SymTable::Get", name + " is not defined."), Value::Create() };
+}
+bool SymTable::inCurrentScope(const std::string &name) const
+{
+	for (auto it = stack.crbegin(); it != stack.crend(); it++)
+	{
+		if (it->ScopeMarker())
+			return false;
+		if (it->name == name)
+			return true;
+	}
+	return false;
+}
+
+#define VALID_T(T) (std::is_same<T, int>::value || std::is_same<T, double>::value)
+template<typename T> Value Value::Create(T value)
+{
+	static_assert(VALID_T(T), "Value::Create: invalid type used to initialize Value object.");
+	return value;
+}
+template<typename T> Value Value::Cast(Value value)
+{
+	static_assert(VALID_T(T), "Value::Cast: invalid type used to initialize Value object.");
+	return (T)(value.type == INT ? value.vInt : value.vDouble);
+}
+void Value::Assign(Value value)
+{
+	switch (type)
+	{
+	case INT:
+		vInt = (int)(value.type == INT ? value.vInt : value.vDouble);
+		break;
+	case DOUBLE:
+		vDouble = (double)(value.type == INT ? value.vInt : value.vDouble);
+		break;
+	}
+}
+Value Value::operator+(Value rhs) const
+{
+	return (type == INT ? vInt : vDouble) + (rhs.type == INT ? rhs.vInt : rhs.vDouble);
+}
+Value Value::operator-(Value rhs) const
+{
+	return (type == INT ? vInt : vDouble) - (rhs.type == INT ? rhs.vInt : rhs.vDouble);
+}
+Value Value::operator*(Value rhs) const
+{
+	return (type == INT ? vInt : vDouble) * (rhs.type == INT ? rhs.vInt : rhs.vDouble);
+}
+Value Value::operator/(Value rhs) const
+{
+	return (type == INT ? vInt : vDouble) / (rhs.type == INT ? rhs.vInt : rhs.vDouble);
 }
