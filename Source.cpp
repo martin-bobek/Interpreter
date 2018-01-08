@@ -15,6 +15,7 @@ class SymTable;
 class Symbol;
 class Stat1;
 class Stat2;
+class AssignExp;
 class Exp;
 class Terminal;
 class OpenB;
@@ -37,6 +38,7 @@ typedef std::unique_ptr<CompilerError> pCompilerError;
 typedef std::unique_ptr<Symbol> pSymbol;
 typedef std::unique_ptr<Stat1> pStat1;
 typedef std::unique_ptr<Stat2> pStat2;
+typedef std::unique_ptr<AssignExp> pAssignExp;
 typedef std::unique_ptr<Exp> pExp;
 typedef std::unique_ptr<Terminal> pTerminal;
 typedef std::unique_ptr<OpenB> pOpenB;
@@ -149,6 +151,7 @@ public:
 	template<typename T> pCompilerError Declare(const std::string &name);
 	template<typename T> pCompilerError Initialize(const std::string &name, Value value);
 	pCompilerError Assign(const std::string &name, Value value);
+	std::tuple<pCompilerError, Value> AssignChain(const std::string &name, Value value);
 	std::tuple<pCompilerError, Value> Get(const std::string &name) const;
 private:
 	bool inCurrentScope(const std::string &name) const;
@@ -245,37 +248,63 @@ private:
 class Stat24 : public Stat2
 {
 public:
-	Stat24(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	Stat24(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIntT symbol_1;
 	const pName symbol_2;
 	const pAssign symbol_3;
-	const pExp symbol_4;
+	const pAssignExp symbol_4;
 	const pTerm symbol_5;
 };
 class Stat25 : public Stat2
 {
 public:
-	Stat25(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	Stat25(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pDoubleT symbol_1;
 	const pName symbol_2;
 	const pAssign symbol_3;
-	const pExp symbol_4;
+	const pAssignExp symbol_4;
 	const pTerm symbol_5;
 };
 class Stat26 : public Stat2
 {
 public:
-	Stat26(pName &&sym1, pAssign &&sym2, pExp &&sym3, pTerm &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
+	Stat26(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3, pTerm &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pName symbol_1;
 	const pAssign symbol_2;
-	const pExp symbol_3;
+	const pAssignExp symbol_3;
 	const pTerm symbol_4;
+};
+class AssignExp : public Symbol
+{
+public:
+	virtual ~AssignExp() = 0;
+	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+};
+AssignExp::~AssignExp() = default;
+class AssignExp1 : public AssignExp
+{
+public:
+	AssignExp1(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pName symbol_1;
+	const pAssign symbol_2;
+	const pAssignExp symbol_3;
+};
+class AssignExp2 : public AssignExp
+{
+public:
+	AssignExp2(pExp &&sym1) : symbol_1(move(sym1)) {}
+	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pExp symbol_1;
 };
 class Exp : public Symbol
 {
@@ -626,6 +655,17 @@ pCompilerError Stat26::Evaluate(SymTable &syms) const
 		return move(error);
 	return syms.Assign(symbol_1->Value(), value);
 }
+std::tuple<pCompilerError, Value> AssignExp1::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = symbol_3->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return syms.AssignChain(symbol_1->Value(), value);
+}
+std::tuple<pCompilerError, Value> AssignExp2::Evaluate(SymTable &syms) const
+{
+	return symbol_1->Evaluate(syms);
+}
 std::tuple<pCompilerError, Value> Exp1::Evaluate(SymTable &syms) const
 {
 	auto[errorL, valueL] = symbol_1->Evaluate(syms);
@@ -751,7 +791,7 @@ bool Stat2::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 	}
 	return true;
 }
-bool Exp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
+bool AssignExp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 {
 	switch (stack.top())
 	{
@@ -759,34 +799,53 @@ bool Exp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		stack.push(19);
 		break;
 	case 13:
-		stack.push(22);
-		break;
-	case 15:
 		stack.push(23);
 		break;
-	case 16:
-		stack.push(26);
+	case 22:
+		stack.push(35);
 		break;
-	case 21:
-		stack.push(32);
-		break;
-	case 28:
+	case 24:
 		stack.push(37);
 		break;
-	case 29:
-		stack.push(38);
+	default:
+		err = { "AssignExp::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool Exp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
+{
+	switch (stack.top())
+	{
+	case 9:
+	case 13:
+	case 22:
+	case 24:
+		stack.push(20);
 		break;
-	case 30:
-		stack.push(39);
+	case 15:
+		stack.push(26);
+		break;
+	case 16:
+		stack.push(29);
 		break;
 	case 31:
-		stack.push(40);
+		stack.push(41);
 		break;
-	case 34:
+	case 32:
 		stack.push(42);
 		break;
-	case 35:
+	case 33:
 		stack.push(43);
+		break;
+	case 34:
+		stack.push(44);
+		break;
+	case 38:
+		stack.push(46);
+		break;
+	case 39:
+		stack.push(47);
 		break;
 	default:
 		err = { "Exp::Process", "Syntax Error!" };
@@ -845,7 +904,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 20:
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -859,7 +918,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -867,7 +926,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -876,7 +935,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -885,7 +944,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -896,7 +955,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -905,7 +964,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -972,7 +1031,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 20:
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -986,7 +1045,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -994,7 +1053,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1003,7 +1062,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1012,7 +1071,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1023,7 +1082,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -1032,7 +1091,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1101,9 +1160,9 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 16:
-		stack.push(24);
+		stack.push(27);
 		break;
-	case 20:
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -1117,7 +1176,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -1125,7 +1184,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1134,7 +1193,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1143,7 +1202,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1154,7 +1213,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -1163,7 +1222,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1211,15 +1270,8 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	}
 	case 9:
 	case 13:
-	case 15:
-	case 16:
-	case 21:
-	case 28:
-	case 29:
-	case 30:
-	case 31:
-	case 34:
-	case 35:
+	case 22:
+	case 24:
 		stack.push(14);
 		break;
 	case 11:
@@ -1250,7 +1302,17 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 20:
+	case 15:
+	case 16:
+	case 31:
+	case 32:
+	case 33:
+	case 34:
+	case 38:
+	case 39:
+		stack.push(25);
+		break;
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -1264,7 +1326,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -1272,7 +1334,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1281,7 +1343,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1290,7 +1352,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1301,7 +1363,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -1310,7 +1372,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1335,9 +1397,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.push(12);
 		break;
 	case 10:
-		stack.push(20);
+		stack.push(21);
 		break;
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -1362,12 +1425,20 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
-		stack.push(27);
+		stack.push(30);
 		break;
-	case 22:
-		stack.push(33);
-		break;
+	case 20:
+	{
+		stack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new AssignExp2(move(sym1)));
+		return AssignExp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
 	case 23:
+		stack.push(36);
+		break;
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -1378,10 +1449,24 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
-		stack.push(41);
+	case 35:
+		stack.push(45);
 		break;
-	case 36:
+	case 37:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
+		symStack.pop();
+		pAssign sym2 = pCast<Assign>(move(symStack.top()));
+		symStack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new AssignExp1(move(sym1), move(sym2), move(sym3)));
+		return AssignExp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -1395,7 +1480,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 37:
+	case 41:
 	{
 		stack.pop();
 		stack.pop();
@@ -1409,7 +1494,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 38:
+	case 42:
 	{
 		stack.pop();
 		stack.pop();
@@ -1423,7 +1508,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -1437,7 +1522,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -1451,7 +1536,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -1468,7 +1553,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -1543,9 +1628,9 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 16:
-		stack.push(25);
+		stack.push(28);
 		break;
-	case 20:
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -1559,7 +1644,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -1567,7 +1652,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1576,7 +1661,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -1585,7 +1670,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1596,7 +1681,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -1605,7 +1690,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -1633,7 +1718,10 @@ bool Assign::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.push(13);
 		break;
 	case 10:
-		stack.push(21);
+		stack.push(22);
+		break;
+	case 14:
+		stack.push(24);
 		break;
 	default:
 		err = { "Assign::Process", "Syntax Error!" };
@@ -1646,6 +1734,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	switch (stack.top())
 	{
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -1669,13 +1758,11 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
-	case 22:
-	case 26:
-	case 32:
-		stack.push(28);
+	case 20:
+	case 29:
+		stack.push(31);
 		break;
-	case 23:
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -1686,7 +1773,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 36:
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -1700,7 +1787,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 37:
+	case 41:
 	{
 		stack.pop();
 		stack.pop();
@@ -1714,7 +1801,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 38:
+	case 42:
 	{
 		stack.pop();
 		stack.pop();
@@ -1728,7 +1815,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -1742,7 +1829,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -1756,7 +1843,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -1773,7 +1860,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -1804,16 +1891,18 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 13:
 	case 15:
 	case 16:
-	case 21:
-	case 28:
-	case 29:
-	case 30:
+	case 22:
+	case 24:
 	case 31:
+	case 32:
+	case 33:
 	case 34:
-	case 35:
+	case 38:
+	case 39:
 		stack.push(15);
 		break;
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -1837,13 +1926,11 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
-	case 22:
-	case 26:
-	case 32:
-		stack.push(29);
+	case 20:
+	case 29:
+		stack.push(32);
 		break;
-	case 23:
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -1854,7 +1941,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 36:
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -1868,7 +1955,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 37:
+	case 41:
 	{
 		stack.pop();
 		stack.pop();
@@ -1882,7 +1969,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 38:
+	case 42:
 	{
 		stack.pop();
 		stack.pop();
@@ -1896,7 +1983,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -1910,7 +1997,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -1924,7 +2011,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -1941,7 +2028,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -1969,6 +2056,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	switch (stack.top())
 	{
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -1992,15 +2080,13 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
-	case 22:
-	case 26:
-	case 32:
-	case 37:
-	case 38:
-		stack.push(30);
+	case 20:
+	case 29:
+	case 41:
+	case 42:
+		stack.push(33);
 		break;
-	case 23:
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -2011,7 +2097,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 36:
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -2025,7 +2111,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -2039,7 +2125,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -2053,7 +2139,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -2070,7 +2156,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -2098,6 +2184,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	switch (stack.top())
 	{
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -2121,15 +2208,13 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 19:
-	case 22:
-	case 26:
-	case 32:
-	case 37:
-	case 38:
-		stack.push(31);
+	case 20:
+	case 29:
+	case 41:
+	case 42:
+		stack.push(34);
 		break;
-	case 23:
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -2140,7 +2225,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 36:
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -2154,7 +2239,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -2168,7 +2253,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -2182,7 +2267,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -2199,7 +2284,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -2230,13 +2315,14 @@ bool OpenP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 13:
 	case 15:
 	case 16:
-	case 21:
-	case 28:
-	case 29:
-	case 30:
+	case 22:
+	case 24:
 	case 31:
+	case 32:
+	case 33:
 	case 34:
-	case 35:
+	case 38:
+	case 39:
 		stack.push(16);
 		break;
 	default:
@@ -2250,6 +2336,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	switch (stack.top())
 	{
 	case 14:
+	case 25:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
@@ -2273,7 +2360,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp7(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
+	case 26:
 	{
 		stack.pop();
 		stack.pop();
@@ -2284,16 +2371,16 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp9(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 24:
-		stack.push(34);
+	case 27:
+		stack.push(38);
 		break;
-	case 25:
-		stack.push(35);
+	case 28:
+		stack.push(39);
 		break;
-	case 26:
-		stack.push(36);
+	case 29:
+		stack.push(40);
 		break;
-	case 36:
+	case 40:
 	{
 		stack.pop();
 		stack.pop();
@@ -2307,7 +2394,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 37:
+	case 41:
 	{
 		stack.pop();
 		stack.pop();
@@ -2321,7 +2408,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 38:
+	case 42:
 	{
 		stack.pop();
 		stack.pop();
@@ -2335,7 +2422,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 39:
+	case 43:
 	{
 		stack.pop();
 		stack.pop();
@@ -2349,7 +2436,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 40:
+	case 44:
 	{
 		stack.pop();
 		stack.pop();
@@ -2363,7 +2450,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 42:
+	case 46:
 	{
 		stack.pop();
 		stack.pop();
@@ -2380,7 +2467,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 43:
+	case 47:
 	{
 		stack.pop();
 		stack.pop();
@@ -2411,13 +2498,14 @@ bool IntL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 13:
 	case 15:
 	case 16:
-	case 21:
-	case 28:
-	case 29:
-	case 30:
+	case 22:
+	case 24:
 	case 31:
+	case 32:
+	case 33:
 	case 34:
-	case 35:
+	case 38:
+	case 39:
 		stack.push(17);
 		break;
 	default:
@@ -2434,13 +2522,14 @@ bool DoubleL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 	case 13:
 	case 15:
 	case 16:
-	case 21:
-	case 28:
-	case 29:
-	case 30:
+	case 22:
+	case 24:
 	case 31:
+	case 32:
+	case 33:
 	case 34:
-	case 35:
+	case 38:
+	case 39:
 		stack.push(18);
 		break;
 	default:
@@ -2498,7 +2587,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 20:
+	case 21:
 	{
 		stack.pop();
 		stack.pop();
@@ -2512,7 +2601,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 27:
+	case 30:
 	{
 		stack.pop();
 		stack.pop();
@@ -2520,7 +2609,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		stack.pop();
 		pTerm sym4 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym2 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -2529,7 +2618,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 33:
+	case 36:
 	{
 		stack.pop();
 		stack.pop();
@@ -2538,7 +2627,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -2549,7 +2638,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 41:
+	case 45:
 	{
 		stack.pop();
 		stack.pop();
@@ -2558,7 +2647,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		stack.pop();
 		pTerm sym5 = pCast<Term>(move(symStack.top()));
 		symStack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
 		symStack.pop();
 		pAssign sym3 = pCast<Assign>(move(symStack.top()));
 		symStack.pop();
@@ -3690,6 +3779,18 @@ pCompilerError SymTable::Assign(const std::string &name, Value value)
 		}
 	}
 	return CompilerError::New("SymTable::Assign", name + " is not defined.");
+}
+std::tuple<pCompilerError, Value> SymTable::AssignChain(const std::string &name, Value value)
+{
+	for (auto it = stack.rbegin(); it != stack.rend(); it++)
+	{
+		if (it->name == name)
+		{
+			it->value.Assign(value);
+			return { pCompilerError(CompilerError::NoError), it->value };
+		}
+	}
+	return { CompilerError::New("SymTable::AssignChain", name + " is not defined."), value };
 }
 std::tuple<pCompilerError, Value> SymTable::Get(const std::string &name) const
 {
