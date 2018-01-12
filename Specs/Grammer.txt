@@ -1,0 +1,234 @@
+Stat1
+	Node
+	Stat1 Stat2
+Stat1
+	End
+	
+Stat2
+	Scope
+	OpenB Stat1 CloseB
+Stat2
+	DeclInt
+	IntT Name Term
+Stat2
+	DeclDouble
+	DoubleT Name Term
+Stat2
+	DeclBool
+	BoolT Name Term
+Stat2
+	InitInt
+	IntT Name Assign AssignExp Term
+Stat2
+	InitDouble
+	DoubleT Name Assign AssignExp Term
+Stat2
+	InitBool
+	BoolT Name Assign AssignExp Term
+Stat2
+	Assign
+	Name Assign AssignExp Term
+AssignExp
+	Chain
+	Name Assign AssignExp
+AssignExp
+	Exp
+	Exp
+Exp
+	Prec
+	OpenP Exp CloseP
+Exp
+	CastInt
+	OpenP IntT CloseP Exp
+Exp
+	CastDouble
+	OpenP DoubleT CloseP Exp
+Exp
+	CastBool
+	OpenP BoolT CloseP Exp
+Exp
+	Negate
+	Sub Exp
+Exp
+	Add
+	Exp Add Exp
+Exp
+	Sub
+	Exp Sub Exp
+Exp
+	Mult
+	Exp Mult Exp
+Exp
+	Div
+	Exp Div Exp
+Exp
+	Greater
+	Exp Greater Exp
+Exp
+	Less
+	Exp Less Exp
+Exp
+	GreaterEqual
+	Exp GreaterEqual Exp
+Exp
+	LessEqual
+	Exp LessEqual Exp
+Exp
+	Equal
+	Exp Equal Exp
+Exp
+	NotEqual
+	Exp NotEqual Exp
+Exp
+	Variable
+	Name
+Exp
+	LiteralInt
+	IntL
+Exp
+	LiteralDouble
+	DoubleL
+Exp
+	LiteralBool
+	BoolL
+$
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+2
+2
+1
+1
+1
+1
+1
+1
+1
+1
+2
+2
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+2
+2
+2
+2
+1
+1
+1
+1
+1
+1
+2
+2
+2
+2
+1
+1
+1
+1
+1
+1
+2
+2
+2
+2
+1
+1
+1
+1
+1
+1
+2
+2
+2
+2
+1
+1
+1
+1
+1
+2
+2
+2
+2
+2
+2
+2
+2
+1
+1
+2
+2
+2
+2
+2
+2
+2
+2
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
