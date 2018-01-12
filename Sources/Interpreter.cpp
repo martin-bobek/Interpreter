@@ -12,6 +12,48 @@ pCompilerError Stat1_End::Evaluate(SymTable &syms) const
 {
 	return pCompilerError(CompilerError::NoError);
 }
+pCompilerError Stat2_If::Evaluate(SymTable &syms) const
+{
+	auto[errorE, valueE] = condition->Evaluate(syms);
+	if (errorE)
+		return move(errorE);
+	auto[errorC, condVal] = valueE.IsTrue();
+	if (errorC)
+		return move(errorC);
+	if (condVal)
+	{
+		syms.EnterScope();
+		pCompilerError errorS = stat2->Evaluate(syms);
+		if (errorS)
+			return errorS;
+		syms.ExitScope();
+	}
+	return pCompilerError(CompilerError::NoError);
+}
+pCompilerError Stat2_IfElse::Evaluate(SymTable &syms) const
+{
+	auto[errorE, valueE] = condition->Evaluate(syms);
+	if (errorE)
+		return move(errorE);
+	auto[errorC, condVal] = valueE.IsTrue();
+	if (errorC)
+		return move(errorC);
+	syms.EnterScope();
+	if (condVal)
+	{
+		pCompilerError errorS = statIf->Evaluate(syms);
+		if (errorS)
+			return errorS;
+	}
+	else
+	{
+		pCompilerError errorS = statElse->Evaluate(syms);
+		if (errorS)
+			return errorS;
+	}
+	syms.ExitScope();
+	return pCompilerError(CompilerError::NoError);
+}
 pCompilerError Stat2_Scope::Evaluate(SymTable &syms) const
 {
 	syms.EnterScope();
@@ -437,4 +479,11 @@ tuple<pCompilerError, Value> Value::operator>=(Value rhs) const
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator>=", "No .>=. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) >= VALUE(rhs)) };
+}
+tuple<pCompilerError, bool> Value::IsTrue() const
+{
+	auto[error, value] = Cast<bool>(*this);
+	if (error)
+		return { move(error), false };
+	return { pCompilerError(CompilerError::NoError), value.vBool };
 }

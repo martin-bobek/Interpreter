@@ -5,6 +5,12 @@ Stat1
 	End
 	
 Stat2
+	If
+	If OpenP AssignExp CloseP Stat2
+Stat2
+	IfElse
+	If OpenP AssignExp CloseP Stat2 Else Stat2
+Stat2
 	Scope
 	OpenB Stat1 CloseB
 Stat2
@@ -102,6 +108,7 @@ $
 1
 1
 1
+2
 1
 1
 1

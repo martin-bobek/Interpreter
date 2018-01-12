@@ -11,6 +11,12 @@ bool Lexer::CreateTokens()
 			Type type = State_1(it, end);
 			switch (type)
 			{
+			case IF:
+				tokens.emplace_back(new If(std::string(begin, it)));
+				break;
+			case ELSE:
+				tokens.emplace_back(new Else(std::string(begin, it)));
+				break;
 			case BOOLT:
 				tokens.emplace_back(new BoolT(std::string(begin, it)));
 				break;
@@ -95,16 +101,19 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 	{
 		switch (*it++)
 		{
-		case 'b':
-			return State_11(it, end);
-		case 'o':
+		case 'i':
+			return State_13(it, end);
+		case 'f':
+			return State_15(it, end);
+		case 'e':
+			return State_30(it, end);
 		case 'l':
+		case 's':
+		case 'o':
 		case 'n':
 		case 'u':
-		case 'e':
 		case 'r':
 		case 'a':
-		case 's':
 		case 'c':
 		case 'g':
 		case 'h':
@@ -145,13 +154,13 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			return State_27(it, end);
-		case 'i':
-			return State_22(it, end);
+			return State_34(it, end);
+		case 'b':
+			return State_32(it, end);
 		case 't':
-			return State_24(it, end);
-		case 'd':
 			return State_29(it, end);
+		case 'd':
+			return State_33(it, end);
 		case ';':
 			return TERM;
 		case '(':
@@ -163,7 +172,7 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case '}':
 			return CLOSEB;
 		case '=':
-			return State_5(it, end);
+			return State_7(it, end);
 		case '+':
 			return ADD;
 		case '-':
@@ -173,13 +182,11 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case '/':
 			return DIV;
 		case '!':
-			return State_12(it, end);
+			return State_14(it, end);
 		case '>':
-			return State_6(it, end);
+			return State_8(it, end);
 		case '<':
-			return State_7(it, end);
-		case 'f':
-			return State_25(it, end);
+			return State_9(it, end);
 		case '0':
 		case '1':
 		case '2':
@@ -190,9 +197,9 @@ Lexer::Type Lexer::State_1(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			return State_9(it, end);
+			return State_11(it, end);
 		case '.':
-			return State_17(it, end);
+			return State_28(it, end);
 		}
 	}
 	return INVALID;
@@ -205,19 +212,19 @@ Lexer::Type Lexer::State_2(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -268,7 +275,7 @@ Lexer::Type Lexer::State_2(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -276,7 +283,7 @@ Lexer::Type Lexer::State_2(Iterator &it, Iterator end)
 			return contValid;
 		}
 	}
-	return BOOLT;
+	return IF;
 }
 Lexer::Type Lexer::State_3(Iterator &it, Iterator end)
 {
@@ -286,19 +293,19 @@ Lexer::Type Lexer::State_3(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -349,7 +356,7 @@ Lexer::Type Lexer::State_3(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -357,7 +364,7 @@ Lexer::Type Lexer::State_3(Iterator &it, Iterator end)
 			return contValid;
 		}
 	}
-	return INTT;
+	return ELSE;
 }
 Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 {
@@ -367,19 +374,19 @@ Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -430,7 +437,169 @@ Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return BOOLT;
+}
+Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'o':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return INTT;
+}
+Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'o':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -440,7 +609,7 @@ Lexer::Type Lexer::State_4(Iterator &it, Iterator end)
 	}
 	return DOUBLET;
 }
-Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -459,7 +628,7 @@ Lexer::Type Lexer::State_5(Iterator &it, Iterator end)
 	}
 	return ASSIGN;
 }
-Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -478,7 +647,7 @@ Lexer::Type Lexer::State_6(Iterator &it, Iterator end)
 	}
 	return GREATER;
 }
-Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -497,7 +666,7 @@ Lexer::Type Lexer::State_7(Iterator &it, Iterator end)
 	}
 	return LESS;
 }
-Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -505,19 +674,19 @@ Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -568,7 +737,7 @@ Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -578,7 +747,7 @@ Lexer::Type Lexer::State_8(Iterator &it, Iterator end)
 	}
 	return BOOLL;
 }
-Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_11(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -596,10 +765,10 @@ Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			contValid = State_9(cont, end);
+			contValid = State_11(cont, end);
 			break;
 		case '.':
-			contValid = State_10(cont, end);
+			contValid = State_12(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -609,7 +778,7 @@ Lexer::Type Lexer::State_9(Iterator &it, Iterator end)
 	}
 	return INTL;
 }
-Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_12(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -627,7 +796,7 @@ Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
 		case '7':
 		case '8':
 		case '9':
-			contValid = State_10(cont, end);
+			contValid = State_12(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -637,101 +806,6 @@ Lexer::Type Lexer::State_10(Iterator &it, Iterator end)
 	}
 	return DOUBLEL;
 }
-Lexer::Type Lexer::State_11(Iterator &it, Iterator end)
-{
-	if (it != end)
-	{
-		Iterator cont = it;
-		Type contValid = INVALID;
-		switch (*cont++)
-		{
-		case 'b':
-		case 'l':
-		case 'i':
-		case 'n':
-		case 't':
-		case 'd':
-		case 'u':
-		case 'e':
-		case 'r':
-		case 'f':
-		case 'a':
-		case 's':
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case 'c':
-		case 'g':
-		case 'h':
-		case 'j':
-		case 'k':
-		case 'm':
-		case 'p':
-		case 'q':
-		case 'v':
-		case 'w':
-		case 'x':
-		case 'y':
-		case 'z':
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-		case 'G':
-		case 'H':
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		case 'Q':
-		case 'R':
-		case 'S':
-		case 'T':
-		case 'U':
-		case 'V':
-		case 'W':
-		case 'X':
-		case 'Y':
-		case 'Z':
-		case '_':
-			contValid = State_27(cont, end);
-			break;
-		case 'o':
-			contValid = State_19(cont, end);
-			break;
-		}
-		if (contValid != INVALID) {
-			it = cont;
-			return contValid;
-		}
-	}
-	return NAME;
-}
-Lexer::Type Lexer::State_12(Iterator &it, Iterator end)
-{
-	if (it != end)
-	{
-		switch (*it++)
-		{
-		case '=':
-			return NOTEQUAL;
-		}
-	}
-	return INVALID;
-}
 Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 {
 	if (it != end)
@@ -740,18 +814,17 @@ Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'i':
-		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -802,10 +875,13 @@ Lexer::Type Lexer::State_13(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'l':
+		case 'f':
 			contValid = State_2(cont, end);
+			break;
+		case 'n':
+			contValid = State_25(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -819,84 +895,13 @@ Lexer::Type Lexer::State_14(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
-		Iterator cont = it;
-		Type contValid = INVALID;
-		switch (*cont++)
+		switch (*it++)
 		{
-		case 'b':
-		case 'o':
-		case 'l':
-		case 'i':
-		case 'n':
-		case 'd':
-		case 'u':
-		case 'e':
-		case 'r':
-		case 'f':
-		case 'a':
-		case 's':
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case 'c':
-		case 'g':
-		case 'h':
-		case 'j':
-		case 'k':
-		case 'm':
-		case 'p':
-		case 'q':
-		case 'v':
-		case 'w':
-		case 'x':
-		case 'y':
-		case 'z':
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-		case 'G':
-		case 'H':
-		case 'I':
-		case 'J':
-		case 'K':
-		case 'L':
-		case 'M':
-		case 'N':
-		case 'O':
-		case 'P':
-		case 'Q':
-		case 'R':
-		case 'S':
-		case 'T':
-		case 'U':
-		case 'V':
-		case 'W':
-		case 'X':
-		case 'Y':
-		case 'Z':
-		case '_':
-			contValid = State_27(cont, end);
-			break;
-		case 't':
-			contValid = State_3(cont, end);
-			break;
-		}
-		if (contValid != INVALID) {
-			it = cont;
-			return contValid;
+		case '=':
+			return NOTEQUAL;
 		}
 	}
-	return NAME;
+	return INVALID;
 }
 Lexer::Type Lexer::State_15(Iterator &it, Iterator end)
 {
@@ -906,18 +911,18 @@ Lexer::Type Lexer::State_15(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
 		case 'r':
-		case 'f':
-		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -968,10 +973,10 @@ Lexer::Type Lexer::State_15(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'e':
-			contValid = State_8(cont, end);
+		case 'a':
+			contValid = State_31(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -989,18 +994,18 @@ Lexer::Type Lexer::State_16(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1051,10 +1056,10 @@ Lexer::Type Lexer::State_16(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
 		case 'e':
-			contValid = State_4(cont, end);
+			contValid = State_3(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1068,42 +1073,21 @@ Lexer::Type Lexer::State_17(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
-		switch (*it++)
-		{
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			return State_10(it, end);
-		}
-	}
-	return INVALID;
-}
-Lexer::Type Lexer::State_18(Iterator &it, Iterator end)
-{
-	if (it != end)
-	{
 		Iterator cont = it;
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
 		case '0':
 		case '1':
@@ -1155,10 +1139,93 @@ Lexer::Type Lexer::State_18(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
+		case 'e':
+			contValid = State_10(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_18(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'l':
 		case 's':
-			contValid = State_15(cont, end);
+		case 'b':
+		case 'o':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
+			break;
+		case 'e':
+			contValid = State_6(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1176,18 +1243,18 @@ Lexer::Type Lexer::State_19(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
-		case 'b':
-		case 'l':
 		case 'i':
+		case 'f':
+		case 'e':
+		case 's':
+		case 'b':
+		case 'o':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1238,10 +1305,10 @@ Lexer::Type Lexer::State_19(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'o':
-			contValid = State_13(cont, end);
+		case 'l':
+			contValid = State_4(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1259,18 +1326,18 @@ Lexer::Type Lexer::State_20(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1321,7 +1388,7 @@ Lexer::Type Lexer::State_20(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
 		case 'l':
 			contValid = State_18(cont, end);
@@ -1342,18 +1409,18 @@ Lexer::Type Lexer::State_21(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
 		case 'b':
 		case 'o':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1404,9 +1471,9 @@ Lexer::Type Lexer::State_21(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'l':
+		case 's':
 			contValid = State_16(cont, end);
 			break;
 		}
@@ -1425,18 +1492,18 @@ Lexer::Type Lexer::State_22(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
+		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1487,10 +1554,10 @@ Lexer::Type Lexer::State_22(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'n':
-			contValid = State_14(cont, end);
+		case 's':
+			contValid = State_17(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1508,18 +1575,18 @@ Lexer::Type Lexer::State_23(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
-		case 'b':
-		case 'o':
-		case 'l':
 		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'o':
 		case 'n':
 		case 't':
 		case 'd':
-		case 'e':
+		case 'u':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1570,10 +1637,10 @@ Lexer::Type Lexer::State_23(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'u':
-			contValid = State_15(cont, end);
+		case 'b':
+			contValid = State_20(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1591,18 +1658,18 @@ Lexer::Type Lexer::State_24(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
-		case 'b':
-		case 'o':
-		case 'l':
 		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
-		case 'f':
+		case 'r':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1653,10 +1720,10 @@ Lexer::Type Lexer::State_24(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'r':
-			contValid = State_23(cont, end);
+		case 'o':
+			contValid = State_19(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1674,18 +1741,18 @@ Lexer::Type Lexer::State_25(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
-		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
-		case 's':
+		case 'a':
 		case '0':
 		case '1':
 		case '2':
@@ -1736,10 +1803,10 @@ Lexer::Type Lexer::State_25(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'a':
-			contValid = State_20(cont, end);
+		case 't':
+			contValid = State_5(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1757,21 +1824,18 @@ Lexer::Type Lexer::State_26(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
-		case 'b':
-			contValid = State_21(cont, end);
-			break;
-		case 'o':
-		case 'l':
 		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'o':
 		case 'n':
 		case 't':
 		case 'd':
-		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1822,7 +1886,10 @@ Lexer::Type Lexer::State_26(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
+			break;
+		case 'u':
+			contValid = State_17(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1840,19 +1907,18 @@ Lexer::Type Lexer::State_27(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
-		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1903,7 +1969,10 @@ Lexer::Type Lexer::State_27(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
+			break;
+		case 'u':
+			contValid = State_23(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {
@@ -1917,22 +1986,43 @@ Lexer::Type Lexer::State_28(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
+		switch (*it++)
+		{
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			return State_12(it, end);
+		}
+	}
+	return INVALID;
+}
+Lexer::Type Lexer::State_29(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
 		Iterator cont = it;
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
 		case 'b':
 		case 'o':
-		case 'l':
-		case 'i':
 		case 'n':
 		case 't':
 		case 'd':
-		case 'e':
-		case 'r':
-		case 'f':
+		case 'u':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -1983,9 +2073,9 @@ Lexer::Type Lexer::State_28(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
 			break;
-		case 'u':
+		case 'r':
 			contValid = State_26(cont, end);
 			break;
 		}
@@ -1996,7 +2086,7 @@ Lexer::Type Lexer::State_28(Iterator &it, Iterator end)
 	}
 	return NAME;
 }
-Lexer::Type Lexer::State_29(Iterator &it, Iterator end)
+Lexer::Type Lexer::State_30(Iterator &it, Iterator end)
 {
 	if (it != end)
 	{
@@ -2004,18 +2094,18 @@ Lexer::Type Lexer::State_29(Iterator &it, Iterator end)
 		Type contValid = INVALID;
 		switch (*cont++)
 		{
-		case 'b':
-		case 'l':
 		case 'i':
+		case 'f':
+		case 'e':
+		case 's':
+		case 'b':
+		case 'o':
 		case 'n':
 		case 't':
 		case 'd':
 		case 'u':
-		case 'e':
 		case 'r':
-		case 'f':
 		case 'a':
-		case 's':
 		case '0':
 		case '1':
 		case '2':
@@ -2066,10 +2156,340 @@ Lexer::Type Lexer::State_29(Iterator &it, Iterator end)
 		case 'Y':
 		case 'Z':
 		case '_':
-			contValid = State_27(cont, end);
+			contValid = State_34(cont, end);
+			break;
+		case 'l':
+			contValid = State_21(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_31(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 's':
+		case 'b':
+		case 'o':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
+			break;
+		case 'l':
+			contValid = State_22(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_32(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
 			break;
 		case 'o':
-			contValid = State_28(cont, end);
+			contValid = State_24(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_33(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
+			break;
+		case 'o':
+			contValid = State_27(cont, end);
+			break;
+		}
+		if (contValid != INVALID) {
+			it = cont;
+			return contValid;
+		}
+	}
+	return NAME;
+}
+Lexer::Type Lexer::State_34(Iterator &it, Iterator end)
+{
+	if (it != end)
+	{
+		Iterator cont = it;
+		Type contValid = INVALID;
+		switch (*cont++)
+		{
+		case 'i':
+		case 'f':
+		case 'e':
+		case 'l':
+		case 's':
+		case 'b':
+		case 'o':
+		case 'n':
+		case 't':
+		case 'd':
+		case 'u':
+		case 'r':
+		case 'a':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'c':
+		case 'g':
+		case 'h':
+		case 'j':
+		case 'k':
+		case 'm':
+		case 'p':
+		case 'q':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
+		case '_':
+			contValid = State_34(cont, end);
 			break;
 		}
 		if (contValid != INVALID) {

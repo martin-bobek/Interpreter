@@ -17,28 +17,30 @@ class Stat2;
 class AssignExp;
 class Exp;
 class Terminal;
+class If;
+class OpenP;
+class CloseP;
+class Else;
 class OpenB;
 class CloseB;
 class IntT;
 class Name;
 class Term;
 class DoubleT;
-class Assign;
 class BoolT;
-class Add;
+class Assign;
 class Sub;
+class Add;
 class Mult;
 class Div;
-class OpenP;
-class CloseP;
-class IntL;
-class DoubleL;
-class Equal;
-class NotEqual;
 class Greater;
 class Less;
 class GreaterEqual;
 class LessEqual;
+class Equal;
+class NotEqual;
+class IntL;
+class DoubleL;
 class BoolL;
 
 typedef std::unique_ptr<CompilerError> pCompilerError;
@@ -48,28 +50,30 @@ typedef std::unique_ptr<Stat2> pStat2;
 typedef std::unique_ptr<AssignExp> pAssignExp;
 typedef std::unique_ptr<Exp> pExp;
 typedef std::unique_ptr<Terminal> pTerminal;
+typedef std::unique_ptr<If> pIf;
+typedef std::unique_ptr<OpenP> pOpenP;
+typedef std::unique_ptr<CloseP> pCloseP;
+typedef std::unique_ptr<Else> pElse;
 typedef std::unique_ptr<OpenB> pOpenB;
 typedef std::unique_ptr<CloseB> pCloseB;
 typedef std::unique_ptr<IntT> pIntT;
 typedef std::unique_ptr<Name> pName;
 typedef std::unique_ptr<Term> pTerm;
 typedef std::unique_ptr<DoubleT> pDoubleT;
-typedef std::unique_ptr<Assign> pAssign;
 typedef std::unique_ptr<BoolT> pBoolT;
-typedef std::unique_ptr<Add> pAdd;
+typedef std::unique_ptr<Assign> pAssign;
 typedef std::unique_ptr<Sub> pSub;
+typedef std::unique_ptr<Add> pAdd;
 typedef std::unique_ptr<Mult> pMult;
 typedef std::unique_ptr<Div> pDiv;
-typedef std::unique_ptr<OpenP> pOpenP;
-typedef std::unique_ptr<CloseP> pCloseP;
-typedef std::unique_ptr<IntL> pIntL;
-typedef std::unique_ptr<DoubleL> pDoubleL;
-typedef std::unique_ptr<Equal> pEqual;
-typedef std::unique_ptr<NotEqual> pNotEqual;
 typedef std::unique_ptr<Greater> pGreater;
 typedef std::unique_ptr<Less> pLess;
 typedef std::unique_ptr<GreaterEqual> pGreaterEqual;
 typedef std::unique_ptr<LessEqual> pLessEqual;
+typedef std::unique_ptr<Equal> pEqual;
+typedef std::unique_ptr<NotEqual> pNotEqual;
+typedef std::unique_ptr<IntL> pIntL;
+typedef std::unique_ptr<DoubleL> pDoubleL;
 typedef std::unique_ptr<BoolL> pBoolL;
 typedef std::stack<size_t, std::vector<size_t>> Stack;
 typedef std::stack<pSymbol, std::vector<pSymbol>> SymStack;
@@ -112,7 +116,7 @@ public:
 	std::vector<pTerminal> GetTokens() { return move(tokens); };
 	Error GetErrorReport() { return move(err); }
 private:
-	enum Type { INVALID, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
+	enum Type { INVALID, IF, ELSE, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
 
 	static Type State_1(Iterator &it, Iterator end);
 	static Type State_2(Iterator &it, Iterator end);
@@ -143,6 +147,11 @@ private:
 	static Type State_27(Iterator &it, Iterator end);
 	static Type State_28(Iterator &it, Iterator end);
 	static Type State_29(Iterator &it, Iterator end);
+	static Type State_30(Iterator &it, Iterator end);
+	static Type State_31(Iterator &it, Iterator end);
+	static Type State_32(Iterator &it, Iterator end);
+	static Type State_33(Iterator &it, Iterator end);
+	static Type State_34(Iterator &it, Iterator end);
 
 	std::istream &in;
 	std::vector<pTerminal> tokens;
@@ -166,6 +175,7 @@ public:
 	tuple<pCompilerError, Value> operator>(Value rhs) const;
 	tuple<pCompilerError, Value> operator<=(Value rhs) const;
 	tuple<pCompilerError, Value> operator>=(Value rhs) const;
+	tuple<pCompilerError, bool> IsTrue() const;
 	void PrintType(std::ostream &out) const;
 	void PrintValue(std::ostream &out) const;
 private:
@@ -253,6 +263,32 @@ public:
 	virtual pCompilerError Evaluate(SymTable &syms) const = 0;
 };
 inline Stat2::~Stat2() = default;
+class Stat2_If : public Stat2
+{
+public:
+	Stat2_If(pIf &&sym1, pOpenP &&sym2, pAssignExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), stat2(move(sym5)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
+private:
+	const pIf ifKey;
+	const pOpenP open;
+	const pAssignExp condition;
+	const pCloseP close;
+	const pStat2 stat2;
+};
+class Stat2_IfElse : public Stat2
+{
+public:
+	Stat2_IfElse(pIf &&sym1, pOpenP &&sym2, pAssignExp &&sym3, pCloseP &&sym4, pStat2 &&sym5, pElse &&sym6, pStat2 &&sym7) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statIf(move(sym5)), elseKey(move(sym6)), statElse(move(sym7)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
+private:
+	const pIf ifKey;
+	const pOpenP open;
+	const pAssignExp condition;
+	const pCloseP close;
+	const pStat2 statIf;
+	const pElse elseKey;
+	const pStat2 statElse;
+};
 class Stat2_Scope : public Stat2
 {
 public:
@@ -568,6 +604,24 @@ private:
 	virtual std::ostream &print(std::ostream &os) const = 0;
 };
 inline Terminal::~Terminal() = default;
+class If : public Terminal
+{
+public:
+	If(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "IF[" << value << ']'; }
+	const std::string value;
+};
+class Else : public Terminal
+{
+public:
+	Else(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "ELSE[" << value << ']'; }
+	const std::string value;
+};
 class BoolT : public Terminal
 {
 public:
