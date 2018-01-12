@@ -1,223 +1,223 @@
 #include "SyntaxTree.h"
 #include <tuple>
 
-pCompilerError Stat11::Evaluate(SymTable &syms) const
+pCompilerError Stat1_Node::Evaluate(SymTable &syms) const
 {
-	pCompilerError error = symbol_1->Evaluate(syms);
+	pCompilerError error = stat1->Evaluate(syms);
 	if (error)
 		return error;
-	return symbol_2->Evaluate(syms);
+	return stat2->Evaluate(syms);
 }
-pCompilerError Stat12::Evaluate(SymTable &syms) const
+pCompilerError Stat1_End::Evaluate(SymTable &syms) const
 {
 	return pCompilerError(CompilerError::NoError);
 }
-pCompilerError Stat21::Evaluate(SymTable &syms) const
+pCompilerError Stat2_Scope::Evaluate(SymTable &syms) const
 {
 	syms.EnterScope();
-	pCompilerError error = symbol_2->Evaluate(syms);
+	pCompilerError error = stat1->Evaluate(syms);
 	syms.ExitScope();
 	return error;
 }
-pCompilerError Stat22::Evaluate(SymTable &syms) const
+pCompilerError Stat2_DeclInt::Evaluate(SymTable &syms) const
 {
-	return syms.Declare<int>(symbol_2->Value());
+	return syms.Declare<int>(name->Value());
 }
-pCompilerError Stat23::Evaluate(SymTable &syms) const
+pCompilerError Stat2_DeclDouble::Evaluate(SymTable &syms) const
 {
-	return syms.Declare<double>(symbol_2->Value());
+	return syms.Declare<double>(name->Value());
 }
-pCompilerError Stat24::Evaluate(SymTable &syms) const
+pCompilerError Stat2_DeclBool::Evaluate(SymTable &syms) const
 {
-	auto[error, value] = symbol_4->Evaluate(syms);
+	return syms.Declare<bool>(name->Value());
+}
+pCompilerError Stat2_InitInt::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return move(error);
-	return syms.Initialize<int>(symbol_2->Value(), value);
+	return syms.Initialize<int>(name->Value(), value);
 }
-pCompilerError Stat25::Evaluate(SymTable &syms) const
+pCompilerError Stat2_InitDouble::Evaluate(SymTable &syms) const
 {
-	auto[error, value] = symbol_4->Evaluate(syms);
+	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return move(error);
-	return syms.Initialize<double>(symbol_2->Value(), value);
+	return syms.Initialize<double>(name->Value(), value);
 }
-pCompilerError Stat26::Evaluate(SymTable &syms) const
+pCompilerError Stat2_InitBool::Evaluate(SymTable &syms) const
 {
-	auto[error, value] = symbol_3->Evaluate(syms);
+	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return move(error);
-	return syms.Assign(symbol_1->Value(), value);
+	return syms.Initialize<bool>(name->Value(), value);
 }
-pCompilerError Stat27::Evaluate(SymTable &syms) const
+pCompilerError Stat2_Assign::Evaluate(SymTable &syms) const
 {
-	return syms.Declare<bool>(symbol_2->Value());
-}
-pCompilerError Stat28::Evaluate(SymTable &syms) const
-{
-	auto[error, value] = symbol_4->Evaluate(syms);
+	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return move(error);
-	return syms.Initialize<bool>(symbol_2->Value(), value);
+	return syms.Assign(name->Value(), value);
 }
-std::tuple<pCompilerError, Value> AssignExp1::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> AssignExp_Chain::Evaluate(SymTable &syms) const
 {
-	auto[error, value] = symbol_3->Evaluate(syms);
+	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
-	return syms.AssignChain(symbol_1->Value(), value);
+	return syms.AssignChain(name->Value(), value);
 }
-std::tuple<pCompilerError, Value> AssignExp2::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> AssignExp_Exp::Evaluate(SymTable &syms) const
 {
-	return symbol_1->Evaluate(syms);
+	return expression->Evaluate(syms);
 }
-std::tuple<pCompilerError, Value> Exp1::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Prec::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	return expression->Evaluate(syms);
+}
+tuple<pCompilerError, Value> Exp_CastInt::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = expression->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return Value::Cast<int>(value);
+}
+tuple<pCompilerError, Value> Exp_CastDouble::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = expression->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return Value::Cast<double>(value);
+}
+tuple<pCompilerError, Value> Exp_CastBool::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = expression->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return Value::Cast<bool>(value);
+}
+tuple<pCompilerError, Value> Exp_Negate::Evaluate(SymTable &syms) const
+{
+	auto[error, value] = expression->Evaluate(syms);
+	if (error)
+		return { move(error), value };
+	return -value;
+}
+tuple<pCompilerError, Value> Exp_Add::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueL };
 	return valueL + valueR;
 
 }
-std::tuple<pCompilerError, Value> Exp2::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Sub::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueL };
 	return valueL - valueR;
 }
-std::tuple<pCompilerError, Value> Exp3::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Mult::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueL };
 	return valueL * valueR;
 }
-std::tuple<pCompilerError, Value> Exp4::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Div::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueL };
 	return valueL / valueR;
 }
-std::tuple<pCompilerError, Value> Exp5::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Greater::Evaluate(SymTable &syms) const
 {
-	return symbol_2->Evaluate(syms);
-}
-std::tuple<pCompilerError, Value> Exp6::Evaluate(SymTable &syms) const
-{
-	return { pCompilerError(CompilerError::NoError), Value::Create(symbol_1->Value()) };
-}
-std::tuple<pCompilerError, Value> Exp7::Evaluate(SymTable &syms) const
-{
-	return { pCompilerError(CompilerError::NoError), Value::Create(symbol_1->Value()) };
-}
-std::tuple<pCompilerError, Value> Exp8::Evaluate(SymTable &syms) const
-{
-	return syms.Get(symbol_1->Value());
-}
-std::tuple<pCompilerError, Value> Exp9::Evaluate(SymTable &syms) const
-{
-	auto[error, value] = symbol_2->Evaluate(syms);
-	if (error)
-		return { move(error), value };
-	return -value;
-}
-std::tuple<pCompilerError, Value> Exp10::Evaluate(SymTable &syms) const
-{
-	auto[error, value] = symbol_4->Evaluate(syms);
-	if (error)
-		return { move(error), value };
-	return Value::Cast<int>(value);
-}
-std::tuple<pCompilerError, Value> Exp11::Evaluate(SymTable &syms) const
-{
-	auto[error, value] = symbol_4->Evaluate(syms);
-	if (error)
-		return { move(error), value };
-	return Value::Cast<double>(value);
-}
-std::tuple<pCompilerError, Value> Exp12::Evaluate(SymTable &syms) const
-{
-	auto[error, value] = symbol_4->Evaluate(syms);
-	if (error)
-		return { move(error), value };
-	return Value::Cast<bool>(value);
-}
-std::tuple<pCompilerError, Value> Exp13::Evaluate(SymTable &syms) const
-{
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
-	if (errorR)
-		return { move(errorR), valueR };
-	return valueL == valueR;
-}
-std::tuple<pCompilerError, Value> Exp14::Evaluate(SymTable &syms) const
-{
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
-	if (errorL)
-		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
-	if (errorR)
-		return { move(errorR), valueR };
-	return valueL != valueR;
-}
-std::tuple<pCompilerError, Value> Exp15::Evaluate(SymTable &syms) const
-{
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
-	if (errorL)
-		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueR };
 	return valueL > valueR;
 }
-std::tuple<pCompilerError, Value> Exp16::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Less::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueR };
 	return valueL < valueR;
 }
-std::tuple<pCompilerError, Value> Exp17::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_GreaterEqual::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueR };
 	return valueL >= valueR;
 }
-std::tuple<pCompilerError, Value> Exp18::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_LessEqual::Evaluate(SymTable &syms) const
 {
-	auto[errorL, valueL] = symbol_1->Evaluate(syms);
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
 	if (errorL)
 		return { move(errorL), valueL };
-	auto[errorR, valueR] = symbol_3->Evaluate(syms);
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
 	if (errorR)
 		return { move(errorR), valueR };
 	return valueL <= valueR;
 }
-std::tuple<pCompilerError, Value> Exp19::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Exp_Equal::Evaluate(SymTable &syms) const
 {
-	return { pCompilerError(CompilerError::NoError), Value::Create(symbol_1->Value()) };
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueR };
+	return valueL == valueR;
+}
+tuple<pCompilerError, Value> Exp_NotEqual::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = expressionL->Evaluate(syms);
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expressionR->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueR };
+	return valueL != valueR;
+}
+tuple<pCompilerError, Value> Exp_Variable::Evaluate(SymTable &syms) const
+{
+	return syms.Get(name->Value());
+}
+tuple<pCompilerError, Value> Exp_LiteralInt::Evaluate(SymTable &syms) const
+{
+	return { pCompilerError(CompilerError::NoError), Value::Create(literal->Value()) };
+}
+tuple<pCompilerError, Value> Exp_LiteralDouble::Evaluate(SymTable &syms) const
+{
+	return { pCompilerError(CompilerError::NoError), Value::Create(literal->Value()) };
+}
+tuple<pCompilerError, Value> Exp_LiteralBool::Evaluate(SymTable &syms) const
+{
+	return { pCompilerError(CompilerError::NoError), Value::Create(literal->Value()) };
 }
 
 void SymTable::Print(std::ostream &out) const
@@ -269,7 +269,7 @@ pCompilerError SymTable::Assign(const std::string &name, Value value)
 	}
 	return CompilerError::New("SymTable::Assign", name + " is not defined.");
 }
-std::tuple<pCompilerError, Value> SymTable::AssignChain(const std::string &name, Value value)
+tuple<pCompilerError, Value> SymTable::AssignChain(const std::string &name, Value value)
 {
 	for (auto it = stack.rbegin(); it != stack.rend(); it++)
 	{
@@ -281,7 +281,7 @@ std::tuple<pCompilerError, Value> SymTable::AssignChain(const std::string &name,
 	}
 	return { CompilerError::New("SymTable::AssignChain", name + " is not defined."), value };
 }
-std::tuple<pCompilerError, Value> SymTable::Get(const std::string &name) const
+tuple<pCompilerError, Value> SymTable::Get(const std::string &name) const
 {
 	for (auto it = stack.rbegin(); it != stack.rend(); it++)
 		if (it->name == name)
@@ -340,7 +340,7 @@ template<typename T> Value Value::Create(T value)
 	static_assert(VALID_T(T), "Value::Create: invalid type used to initialize Value object.");
 	return value;
 }
-template<typename T> std::tuple<pCompilerError, Value> Value::Cast(Value value)
+template<typename T> tuple<pCompilerError, Value> Value::Cast(Value value)
 {
 	static_assert(VALID_T(T), "Value::Cast: invalid type used to initialize Value object.");
 	switch (value.type)
@@ -372,67 +372,67 @@ void Value::Assign(Value value)
 		vBool = (bool)VALUE(value);
 	}
 }
-std::tuple<pCompilerError, Value> Value::operator+(Value rhs) const
+tuple<pCompilerError, Value> Value::operator+(Value rhs) const
 {
 	if (type == BOOL || rhs.type == BOOL)
 		return { CompilerError::New("Value::operator+", "No .+. operator defined for type bool."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) + VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator-(Value rhs) const
+tuple<pCompilerError, Value> Value::operator-(Value rhs) const
 {
 	if (type == BOOL || rhs.type == BOOL)
 		return { CompilerError::New("Value::operator-", "No .-. operator defined for type bool."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) - VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator*(Value rhs) const
+tuple<pCompilerError, Value> Value::operator*(Value rhs) const
 {
 	if (type == BOOL || rhs.type == BOOL)
 		return { CompilerError::New("Value::operator*", "No .*. operator defined for type bool."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) * VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator/(Value rhs) const
+tuple<pCompilerError, Value> Value::operator/(Value rhs) const
 {
 	if (type == BOOL || rhs.type == BOOL)
 		return { CompilerError::New("Value::operator/", "No ./. operator defined for type bool."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) / VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator-() const
+tuple<pCompilerError, Value> Value::operator-() const
 {
 	if (type == BOOL)
 		return { CompilerError::New("Value::operator-", "No -. operator defined for type bool."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(-VALUE(*this)) };
 }
-std::tuple<pCompilerError, Value> Value::operator==(Value rhs) const
+tuple<pCompilerError, Value> Value::operator==(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator==", "No .==. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) == VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator!=(Value rhs) const
+tuple<pCompilerError, Value> Value::operator!=(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator!=", "No .!=. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) != VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator<(Value rhs) const
+tuple<pCompilerError, Value> Value::operator<(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator<", "No .<. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) < VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator>(Value rhs) const
+tuple<pCompilerError, Value> Value::operator>(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator>", "No .>. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) > VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator<=(Value rhs) const
+tuple<pCompilerError, Value> Value::operator<=(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator<=", "No .<=. operator defined for types bool and numeric."), *this };
 	return { pCompilerError(CompilerError::NoError), Value(VALUE(*this) <= VALUE(rhs)) };
 }
-std::tuple<pCompilerError, Value> Value::operator>=(Value rhs) const
+tuple<pCompilerError, Value> Value::operator>=(Value rhs) const
 {
 	if ((type == BOOL) != (rhs.type == BOOL))
 		return { CompilerError::New("Value::operator>=", "No .>=. operator defined for types bool and numeric."), *this };

@@ -83,7 +83,7 @@ bool Exp::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		stack.push(23);
 		break;
 	case 17:
-		stack.push(31);
+		stack.push(34);
 		break;
 	case 18:
 		stack.push(35);
@@ -139,7 +139,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 1:
 	case 8:
@@ -153,7 +153,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 13:
@@ -167,7 +167,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -181,7 +181,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 24:
@@ -195,7 +195,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -209,7 +209,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -226,7 +226,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -246,7 +246,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -266,7 +266,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -286,7 +286,7 @@ bool OpenB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -301,7 +301,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 7:
 	{
@@ -311,7 +311,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 8:
@@ -328,7 +328,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -342,7 +342,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 24:
@@ -356,7 +356,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -370,7 +370,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -387,7 +387,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -407,7 +407,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -427,7 +427,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -447,7 +447,7 @@ bool CloseB::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -462,7 +462,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 1:
 	case 8:
@@ -476,7 +476,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 13:
@@ -490,7 +490,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -504,11 +504,11 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-		stack.push(32);
+	case 17:
+		stack.push(30);
 		break;
 	case 24:
 	{
@@ -521,7 +521,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -535,7 +535,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -552,7 +552,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -572,7 +572,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -592,7 +592,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -612,7 +612,7 @@ bool IntT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -627,7 +627,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 1:
 	case 8:
@@ -650,7 +650,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 10:
@@ -671,7 +671,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -685,7 +685,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 17:
@@ -703,7 +703,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 51:
 	case 52:
 	case 53:
-		stack.push(30);
+		stack.push(31);
 		break;
 	case 24:
 	{
@@ -716,7 +716,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -730,7 +730,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -747,7 +747,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -767,7 +767,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -787,7 +787,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -807,7 +807,7 @@ bool Name::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -830,12 +830,12 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.push(26);
 		break;
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -843,7 +843,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -851,7 +851,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -859,7 +859,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 22:
@@ -870,13 +870,13 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new AssignExp2(move(sym1)));
+		symStack.emplace(new AssignExp_Exp(move(sym1)));
 		return AssignExp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 28:
 		stack.push(49);
 		break;
-	case 31:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -884,7 +884,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 47:
@@ -904,7 +904,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new AssignExp1(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new AssignExp_Chain(move(sym1), move(sym2), move(sym3)));
 		return AssignExp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 54:
@@ -918,24 +918,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
 	{
 		stack.pop();
 		stack.pop();
@@ -946,7 +932,21 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -960,7 +960,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -974,38 +974,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 59:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pEqual sym2 = pCast<Equal>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp13(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 60:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp14(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
 	{
 		stack.pop();
 		stack.pop();
@@ -1016,10 +988,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 62:
+	case 60:
 	{
 		stack.pop();
 		stack.pop();
@@ -1030,10 +1002,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 63:
+	case 61:
 	{
 		stack.pop();
 		stack.pop();
@@ -1044,10 +1016,10 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 64:
+	case 62:
 	{
 		stack.pop();
 		stack.pop();
@@ -1058,7 +1030,35 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 63:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pEqual sym2 = pCast<Equal>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Equal(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 64:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_NotEqual(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -1075,7 +1075,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -1092,7 +1092,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -1109,7 +1109,7 @@ bool Term::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -1124,7 +1124,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 1:
 	case 8:
@@ -1138,7 +1138,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 13:
@@ -1152,7 +1152,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -1166,11 +1166,11 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 18:
-		stack.push(33);
+	case 17:
+		stack.push(32);
 		break;
 	case 24:
 	{
@@ -1183,7 +1183,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -1197,7 +1197,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -1214,7 +1214,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -1234,7 +1234,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -1254,7 +1254,7 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -1274,11 +1274,176 @@ bool DoubleT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
 		err = { "DoubleT::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool BoolT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 0:
+	case 2:
+		symStack.emplace(new Stat1_End());
+		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
+	case 1:
+	case 8:
+		stack.push(6);
+		break;
+	case 7:
+	{
+		stack.pop();
+		stack.pop();
+		pStat2 sym2 = pCast<Stat2>(move(symStack.top()));
+		symStack.pop();
+		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
+		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 13:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseB sym3 = pCast<CloseB>(move(symStack.top()));
+		symStack.pop();
+		pStat1 sym2 = pCast<Stat1>(move(symStack.top()));
+		symStack.pop();
+		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 14:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym3 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym1 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 17:
+		stack.push(33);
+		break;
+	case 24:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym3 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 26:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym3 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 36:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym4 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
+		symStack.pop();
+		pAssign sym2 = pCast<Assign>(move(symStack.top()));
+		symStack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 49:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym5 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
+		symStack.pop();
+		pAssign sym3 = pCast<Assign>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym1 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 65:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym5 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
+		symStack.pop();
+		pAssign sym3 = pCast<Assign>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 66:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pTerm sym5 = pCast<Term>(move(symStack.top()));
+		symStack.pop();
+		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
+		symStack.pop();
+		pAssign sym3 = pCast<Assign>(move(symStack.top()));
+		symStack.pop();
+		pName sym2 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "BoolT::Process", "Syntax Error!" };
 		return false;
 	}
 	return true;
@@ -1308,182 +1473,49 @@ bool Assign::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	}
 	return true;
 }
-bool BoolT::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+bool OpenP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
 	{
-	case 0:
-	case 2:
-		symStack.emplace(new Stat12());
-		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
-	case 1:
-	case 8:
-		stack.push(6);
-		break;
-	case 7:
-	{
-		stack.pop();
-		stack.pop();
-		pStat2 sym2 = pCast<Stat2>(move(symStack.top()));
-		symStack.pop();
-		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
-		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 13:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseB sym3 = pCast<CloseB>(move(symStack.top()));
-		symStack.pop();
-		pStat1 sym2 = pCast<Stat1>(move(symStack.top()));
-		symStack.pop();
-		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 14:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym3 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym1 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
+	case 10:
+	case 15:
+	case 17:
 	case 18:
-		stack.push(34);
+	case 25:
+	case 27:
+	case 29:
+	case 37:
+	case 38:
+	case 39:
+	case 40:
+	case 41:
+	case 42:
+	case 43:
+	case 44:
+	case 45:
+	case 46:
+	case 51:
+	case 52:
+	case 53:
+		stack.push(17);
 		break;
-	case 24:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym3 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 26:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym3 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 36:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym4 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pAssignExp sym3 = pCast<AssignExp>(move(symStack.top()));
-		symStack.pop();
-		pAssign sym2 = pCast<Assign>(move(symStack.top()));
-		symStack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 49:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym5 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
-		symStack.pop();
-		pAssign sym3 = pCast<Assign>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym1 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 65:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym5 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
-		symStack.pop();
-		pAssign sym3 = pCast<Assign>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 66:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pTerm sym5 = pCast<Term>(move(symStack.top()));
-		symStack.pop();
-		pAssignExp sym4 = pCast<AssignExp>(move(symStack.top()));
-		symStack.pop();
-		pAssign sym3 = pCast<Assign>(move(symStack.top()));
-		symStack.pop();
-		pName sym2 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
-		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
 	default:
-		err = { "BoolT::Process", "Syntax Error!" };
+		err = { "OpenP::Process", "Syntax Error!" };
 		return false;
 	}
 	return true;
 }
-bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
 	{
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -1491,7 +1523,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -1499,7 +1531,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -1507,20 +1539,22 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 23:
-	case 35:
-	case 59:
-	case 60:
-	case 61:
-	case 62:
-	case 63:
-	case 64:
-		stack.push(37);
+	case 30:
+		stack.push(51);
 		break;
-	case 31:
+	case 32:
+		stack.push(52);
+		break;
+	case 33:
+		stack.push(53);
+		break;
+	case 34:
+		stack.push(54);
+		break;
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1528,7 +1562,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 54:
@@ -1542,24 +1576,10 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
 	{
 		stack.pop();
 		stack.pop();
@@ -1570,7 +1590,21 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -1584,7 +1618,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -1598,7 +1632,91 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 63:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pEqual sym2 = pCast<Equal>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Equal(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 64:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_NotEqual(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -1615,7 +1733,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -1632,7 +1750,7 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -1649,11 +1767,11 @@ bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
-		err = { "Add::Process", "Syntax Error!" };
+		err = { "CloseP::Process", "Syntax Error!" };
 		return false;
 	}
 	return true;
@@ -1682,15 +1800,15 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 51:
 	case 52:
 	case 53:
-		stack.push(17);
+		stack.push(18);
 		break;
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -1698,7 +1816,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -1706,7 +1824,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -1714,20 +1832,20 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 23:
-	case 35:
+	case 34:
 	case 59:
 	case 60:
 	case 61:
 	case 62:
 	case 63:
 	case 64:
-		stack.push(38);
+		stack.push(37);
 		break;
-	case 31:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1735,7 +1853,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 54:
@@ -1749,24 +1867,10 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
 	{
 		stack.pop();
 		stack.pop();
@@ -1777,7 +1881,21 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -1791,7 +1909,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -1805,7 +1923,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -1822,7 +1940,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -1839,7 +1957,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -1856,7 +1974,7 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -1865,17 +1983,17 @@ bool Sub::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	}
 	return true;
 }
-bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+bool Add::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
 	{
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -1883,7 +2001,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -1891,7 +2009,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -1899,22 +2017,20 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 23:
-	case 35:
-	case 55:
-	case 56:
+	case 34:
 	case 59:
 	case 60:
 	case 61:
 	case 62:
 	case 63:
 	case 64:
-		stack.push(39);
+		stack.push(38);
 		break;
-	case 31:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -1922,7 +2038,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 54:
@@ -1936,7 +2052,35 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -1950,7 +2094,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -1964,7 +2108,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -1981,7 +2125,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -1998,7 +2142,7 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -2015,7 +2159,166 @@ bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "Add::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool Mult::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+	case 55:
+	case 56:
+	case 59:
+	case 60:
+	case 61:
+	case 62:
+	case 63:
+	case 64:
+		stack.push(39);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -2029,12 +2332,12 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	switch (stack.top())
 	{
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -2042,7 +2345,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -2050,7 +2353,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -2058,11 +2361,11 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 23:
-	case 35:
+	case 34:
 	case 55:
 	case 56:
 	case 59:
@@ -2073,7 +2376,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	case 64:
 		stack.push(40);
 		break;
-	case 31:
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -2081,7 +2384,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 54:
@@ -2095,7 +2398,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -2109,7 +2412,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -2123,7 +2426,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -2140,7 +2443,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -2157,7 +2460,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -2174,7 +2477,7 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
@@ -2183,49 +2486,17 @@ bool Div::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 	}
 	return true;
 }
-bool OpenP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 10:
-	case 15:
-	case 17:
-	case 18:
-	case 25:
-	case 27:
-	case 29:
-	case 37:
-	case 38:
-	case 39:
-	case 40:
-	case 41:
-	case 42:
-	case 43:
-	case 44:
-	case 45:
-	case 46:
-	case 51:
-	case 52:
-	case 53:
-		stack.push(18);
-		break;
-	default:
-		err = { "OpenP::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+bool Greater::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
 	{
 	case 16:
-	case 30:
+	case 31:
 	{
 		stack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
+		symStack.emplace(new Exp_Variable(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 19:
@@ -2233,7 +2504,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pIntL sym1 = pCast<IntL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 20:
@@ -2241,7 +2512,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 21:
@@ -2249,10 +2520,16 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		stack.pop();
 		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 31:
+	case 23:
+	case 34:
+	case 63:
+	case 64:
+		stack.push(41);
+		break;
+	case 35:
 	{
 		stack.pop();
 		stack.pop();
@@ -2260,21 +2537,9 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pSub sym1 = pCast<Sub>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 32:
-		stack.push(51);
-		break;
-	case 33:
-		stack.push(52);
-		break;
-	case 34:
-		stack.push(53);
-		break;
-	case 35:
-		stack.push(54);
-		break;
 	case 54:
 	{
 		stack.pop();
@@ -2286,24 +2551,10 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
 	{
 		stack.pop();
 		stack.pop();
@@ -2314,7 +2565,21 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 57:
@@ -2328,7 +2593,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 58:
@@ -2342,38 +2607,10 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 59:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pEqual sym2 = pCast<Equal>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp13(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 60:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp14(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
 	{
 		stack.pop();
 		stack.pop();
@@ -2384,10 +2621,10 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 62:
+	case 60:
 	{
 		stack.pop();
 		stack.pop();
@@ -2398,10 +2635,10 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 63:
+	case 61:
 	{
 		stack.pop();
 		stack.pop();
@@ -2412,10 +2649,10 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
-	case 64:
+	case 62:
 	{
 		stack.pop();
 		stack.pop();
@@ -2426,7 +2663,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pExp sym1 = pCast<Exp>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 67:
@@ -2443,7 +2680,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 68:
@@ -2460,7 +2697,7 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 69:
@@ -2477,11 +2714,1248 @@ bool CloseP::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 		symStack.pop();
 		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:
-		err = { "CloseP::Process", "Syntax Error!" };
+		err = { "Greater::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool Less::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+	case 63:
+	case 64:
+		stack.push(42);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "Less::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool GreaterEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+	case 63:
+	case 64:
+		stack.push(43);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "GreaterEqual::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool LessEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+		stack.push(44);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 63:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pEqual sym2 = pCast<Equal>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Equal(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 64:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_NotEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "LessEqual::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool Equal::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+	case 63:
+	case 64:
+		stack.push(45);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "Equal::Process", "Syntax Error!" };
+		return false;
+	}
+	return true;
+}
+bool NotEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
+{
+	switch (stack.top())
+	{
+	case 16:
+	case 31:
+	{
+		stack.pop();
+		pName sym1 = pCast<Name>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Variable(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 19:
+	{
+		stack.pop();
+		pIntL sym1 = pCast<IntL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralInt(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 20:
+	{
+		stack.pop();
+		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralDouble(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 21:
+	{
+		stack.pop();
+		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LiteralBool(move(sym1)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 23:
+	case 34:
+		stack.push(46);
+		break;
+	case 35:
+	{
+		stack.pop();
+		stack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym1 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Negate(move(sym1), move(sym2)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 54:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pExp sym2 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Prec(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 55:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pSub sym2 = pCast<Sub>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Sub(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 56:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pAdd sym2 = pCast<Add>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Add(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 57:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pMult sym2 = pCast<Mult>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Mult(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 58:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pDiv sym2 = pCast<Div>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Div(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 59:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreater sym2 = pCast<Greater>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Greater(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 60:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLess sym2 = pCast<Less>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Less(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 61:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_GreaterEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 62:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_LessEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 63:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pEqual sym2 = pCast<Equal>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_Equal(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 64:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym3 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
+		symStack.pop();
+		pExp sym1 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_NotEqual(move(sym1), move(sym2), move(sym3)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 67:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pIntT sym2 = pCast<IntT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastInt(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 68:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastDouble(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	case 69:
+	{
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		stack.pop();
+		pExp sym4 = pCast<Exp>(move(symStack.top()));
+		symStack.pop();
+		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
+		symStack.pop();
+		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
+		symStack.pop();
+		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
+		symStack.pop();
+		symStack.emplace(new Exp_CastBool(move(sym1), move(sym2), move(sym3), move(sym4)));
+		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
+	}
+	default:
+		err = { "NotEqual::Process", "Syntax Error!" };
 		return false;
 	}
 	return true;
@@ -2550,1480 +4024,6 @@ bool DoubleL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) cons
 	}
 	return true;
 }
-bool Equal::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-		stack.push(41);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 59:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pEqual sym2 = pCast<Equal>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp13(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 60:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp14(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "Equal::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool NotEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-		stack.push(42);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 59:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pEqual sym2 = pCast<Equal>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp13(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 60:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pNotEqual sym2 = pCast<NotEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp14(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "NotEqual::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool Greater::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-	case 59:
-	case 60:
-		stack.push(43);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "Greater::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool Less::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-	case 59:
-	case 60:
-		stack.push(44);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "Less::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool GreaterEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-	case 59:
-	case 60:
-		stack.push(45);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "GreaterEqual::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
-bool LessEqual::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
-{
-	switch (stack.top())
-	{
-	case 16:
-	case 30:
-	{
-		stack.pop();
-		pName sym1 = pCast<Name>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp8(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 19:
-	{
-		stack.pop();
-		pIntL sym1 = pCast<IntL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp6(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 20:
-	{
-		stack.pop();
-		pDoubleL sym1 = pCast<DoubleL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp7(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 21:
-	{
-		stack.pop();
-		pBoolL sym1 = pCast<BoolL>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp19(move(sym1)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 23:
-	case 35:
-	case 59:
-	case 60:
-		stack.push(46);
-		break;
-	case 31:
-	{
-		stack.pop();
-		stack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym1 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp9(move(sym1), move(sym2)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 54:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pExp sym2 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp5(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 55:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pAdd sym2 = pCast<Add>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp1(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 56:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pSub sym2 = pCast<Sub>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp2(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 57:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pMult sym2 = pCast<Mult>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp3(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 58:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pDiv sym2 = pCast<Div>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp4(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 61:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreater sym2 = pCast<Greater>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp15(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 62:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLess sym2 = pCast<Less>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp16(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 63:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pGreaterEqual sym2 = pCast<GreaterEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp17(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 64:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym3 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pLessEqual sym2 = pCast<LessEqual>(move(symStack.top()));
-		symStack.pop();
-		pExp sym1 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp18(move(sym1), move(sym2), move(sym3)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 67:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pIntT sym2 = pCast<IntT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp10(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 68:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pDoubleT sym2 = pCast<DoubleT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp11(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	case 69:
-	{
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		stack.pop();
-		pExp sym4 = pCast<Exp>(move(symStack.top()));
-		symStack.pop();
-		pCloseP sym3 = pCast<CloseP>(move(symStack.top()));
-		symStack.pop();
-		pBoolT sym2 = pCast<BoolT>(move(symStack.top()));
-		symStack.pop();
-		pOpenP sym1 = pCast<OpenP>(move(symStack.top()));
-		symStack.pop();
-		symStack.emplace(new Exp12(move(sym1), move(sym2), move(sym3), move(sym4)));
-		return Exp::Process(stack, symStack, err) && Process(stack, symStack, err);
-	}
-	default:
-		err = { "LessEqual::Process", "Syntax Error!" };
-		return false;
-	}
-	return true;
-}
 bool BoolL::Process(Stack &stack, SymStack &symStack, Parser::Error &err) const
 {
 	switch (stack.top())
@@ -4062,7 +4062,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 	{
 	case 0:
 	case 2:
-		symStack.emplace(new Stat12());
+		symStack.emplace(new Stat1_End());
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	case 1:
 		break;
@@ -4074,7 +4074,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pStat1 sym1 = pCast<Stat1>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat11(move(sym1), move(sym2)));
+		symStack.emplace(new Stat1_Node(move(sym1), move(sym2)));
 		return Stat1::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 13:
@@ -4088,7 +4088,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pOpenB sym1 = pCast<OpenB>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat21(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_Scope(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 14:
@@ -4102,7 +4102,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat22(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclInt(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 24:
@@ -4116,7 +4116,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat23(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclDouble(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 26:
@@ -4130,7 +4130,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat27(move(sym1), move(sym2), move(sym3)));
+		symStack.emplace(new Stat2_DeclBool(move(sym1), move(sym2), move(sym3)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 36:
@@ -4147,7 +4147,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pName sym1 = pCast<Name>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat26(move(sym1), move(sym2), move(sym3), move(sym4)));
+		symStack.emplace(new Stat2_Assign(move(sym1), move(sym2), move(sym3), move(sym4)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 49:
@@ -4167,7 +4167,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pIntT sym1 = pCast<IntT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat24(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitInt(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 65:
@@ -4187,7 +4187,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pDoubleT sym1 = pCast<DoubleT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat25(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitDouble(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	case 66:
@@ -4207,7 +4207,7 @@ bool End::Process(Stack &stack, SymStack &symStack, Parser::Error &err)
 		symStack.pop();
 		pBoolT sym1 = pCast<BoolT>(move(symStack.top()));
 		symStack.pop();
-		symStack.emplace(new Stat28(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
+		symStack.emplace(new Stat2_InitBool(move(sym1), move(sym2), move(sym3), move(sym4), move(sym5)));
 		return Stat2::Process(stack, symStack, err) && Process(stack, symStack, err);
 	}
 	default:

@@ -8,6 +8,7 @@
 #include <iostream>
 
 using std::move;
+using std::tuple;
 
 class CompilerError;
 class Symbol;
@@ -152,19 +153,19 @@ class Value
 public:
 	template<typename T> static Value Create(T value);
 	static Value Create() { return 0; }
-	template<typename T> static std::tuple<pCompilerError, Value> Cast(Value value);
+	template<typename T> static tuple<pCompilerError, Value> Cast(Value value);
 	void Assign(Value value);
-	std::tuple<pCompilerError, Value> operator+(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator-(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator*(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator/(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator-() const;
-	std::tuple<pCompilerError, Value> operator==(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator!=(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator<(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator>(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator<=(Value rhs) const;
-	std::tuple<pCompilerError, Value> operator>=(Value rhs) const;
+	tuple<pCompilerError, Value> operator+(Value rhs) const;
+	tuple<pCompilerError, Value> operator-(Value rhs) const;
+	tuple<pCompilerError, Value> operator*(Value rhs) const;
+	tuple<pCompilerError, Value> operator/(Value rhs) const;
+	tuple<pCompilerError, Value> operator-() const;
+	tuple<pCompilerError, Value> operator==(Value rhs) const;
+	tuple<pCompilerError, Value> operator!=(Value rhs) const;
+	tuple<pCompilerError, Value> operator<(Value rhs) const;
+	tuple<pCompilerError, Value> operator>(Value rhs) const;
+	tuple<pCompilerError, Value> operator<=(Value rhs) const;
+	tuple<pCompilerError, Value> operator>=(Value rhs) const;
 	void PrintType(std::ostream &out) const;
 	void PrintValue(std::ostream &out) const;
 private:
@@ -188,8 +189,8 @@ public:
 	template<typename T> pCompilerError Declare(const std::string &name);
 	template<typename T> pCompilerError Initialize(const std::string &name, Value value);
 	pCompilerError Assign(const std::string &name, Value value);
-	std::tuple<pCompilerError, Value> AssignChain(const std::string &name, Value value);
-	std::tuple<pCompilerError, Value> Get(const std::string &name) const;
+	tuple<pCompilerError, Value> AssignChain(const std::string &name, Value value);
+	tuple<pCompilerError, Value> Get(const std::string &name) const;
 private:
 	bool inCurrentScope(const std::string &name) const;
 	struct Variable
@@ -229,19 +230,19 @@ public:
 	virtual pCompilerError Evaluate(SymTable &syms) const = 0;
 };
 inline Stat1::~Stat1() = default;
-class Stat11 : public Stat1
+class Stat1_Node : public Stat1
 {
 public:
-	Stat11(pStat1 &&sym1, pStat2 &&sym2) : symbol_1(move(sym1)), symbol_2(move(sym2)) {}
+	Stat1_Node(pStat1 &&sym1, pStat2 &&sym2) : stat1(move(sym1)), stat2(move(sym2)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pStat1 symbol_1;
-	const pStat2 symbol_2;
+	const pStat1 stat1;
+	const pStat2 stat2;
 };
-class Stat12 : public Stat1
+class Stat1_End : public Stat1
 {
 public:
-	Stat12() = default;
+	Stat1_End() = default;
 	pCompilerError Evaluate(SymTable &syms) const;
 };
 class Stat2 : public Symbol
@@ -252,310 +253,310 @@ public:
 	virtual pCompilerError Evaluate(SymTable &syms) const = 0;
 };
 inline Stat2::~Stat2() = default;
-class Stat21 : public Stat2
+class Stat2_Scope : public Stat2
 {
 public:
-	Stat21(pOpenB &&sym1, pStat1 &&sym2, pCloseB &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	Stat2_Scope(pOpenB &&sym1, pStat1 &&sym2, pCloseB &&sym3) : open(move(sym1)), stat1(move(sym2)), close(move(sym3)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pOpenB symbol_1;
-	const pStat1 symbol_2;
-	const pCloseB symbol_3;
+	const pOpenB open;
+	const pStat1 stat1;
+	const pCloseB close;
 };
-class Stat22 : public Stat2
+class Stat2_DeclInt : public Stat2
 {
 public:
-	Stat22(pIntT &&sym1, pName &&sym2, pTerm &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	Stat2_DeclInt(pIntT &&sym1, pName &&sym2, pTerm &&sym3) : type(move(sym1)), name(move(sym2)), end(move(sym3)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pIntT symbol_1;
-	const pName symbol_2;
-	const pTerm symbol_3;
+	const pIntT type;
+	const pName name;
+	const pTerm end;
 };
-class Stat23 : public Stat2
+class Stat2_DeclDouble : public Stat2
 {
 public:
-	Stat23(pDoubleT &&sym1, pName &&sym2, pTerm &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	Stat2_DeclDouble(pDoubleT &&sym1, pName &&sym2, pTerm &&sym3) : type(move(sym1)), name(move(sym2)), end(move(sym3)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pDoubleT symbol_1;
-	const pName symbol_2;
-	const pTerm symbol_3;
+	const pDoubleT type;
+	const pName name;
+	const pTerm end;
 };
-class Stat24 : public Stat2
+class Stat2_DeclBool : public Stat2
 {
 public:
-	Stat24(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	Stat2_DeclBool(pBoolT &&sym1, pName &&sym2, pTerm &&sym3) : type(move(sym1)), name(move(sym2)), end(move(sym3)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pIntT symbol_1;
-	const pName symbol_2;
-	const pAssign symbol_3;
-	const pAssignExp symbol_4;
-	const pTerm symbol_5;
+	const pBoolT type;
+	const pName name;
+	const pTerm end;
 };
-class Stat25 : public Stat2
+class Stat2_InitInt : public Stat2
 {
 public:
-	Stat25(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	Stat2_InitInt(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pDoubleT symbol_1;
-	const pName symbol_2;
-	const pAssign symbol_3;
-	const pAssignExp symbol_4;
-	const pTerm symbol_5;
+	const pIntT type;
+	const pName name;
+	const pAssign assign;
+	const pAssignExp expression;
+	const pTerm end;
 };
-class Stat26 : public Stat2
+class Stat2_InitDouble : public Stat2
 {
 public:
-	Stat26(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3, pTerm &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
+	Stat2_InitDouble(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pName symbol_1;
-	const pAssign symbol_2;
-	const pAssignExp symbol_3;
-	const pTerm symbol_4;
+	const pDoubleT type;
+	const pName name;
+	const pAssign assign;
+	const pAssignExp expression;
+	const pTerm end;
 };
-class Stat27 : public Stat2
+class Stat2_InitBool : public Stat2
 {
 public:
-	Stat27(pBoolT &&sym1, pName &&sym2, pTerm &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
+	Stat2_InitBool(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pBoolT symbol_1;
-	const pName symbol_2;
-	const pTerm symbol_3;
+	const pBoolT type;
+	const pName name;
+	const pAssign assign;
+	const pAssignExp expression;
+	const pTerm end;
 };
-class Stat28 : public Stat2
+class Stat2_Assign : public Stat2
 {
 public:
-	Stat28(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)), symbol_5(move(sym5)) {}
+	Stat2_Assign(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3, pTerm &&sym4) : name(move(sym1)), assign(move(sym2)), expression(move(sym3)), end(move(sym4)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pBoolT symbol_1;
-	const pName symbol_2;
-	const pAssign symbol_3;
-	const pAssignExp symbol_4;
-	const pTerm symbol_5;
+	const pName name;
+	const pAssign assign;
+	const pAssignExp expression;
+	const pTerm end;
 };
 class AssignExp : public Symbol
 {
 public:
 	virtual ~AssignExp() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
-	virtual std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
 };
 inline AssignExp::~AssignExp() = default;
-class AssignExp1 : public AssignExp
+class AssignExp_Chain : public AssignExp
 {
 public:
-	AssignExp1(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	AssignExp_Chain(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3) : name(move(sym1)), assign(move(sym2)), expression(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pName symbol_1;
-	const pAssign symbol_2;
-	const pAssignExp symbol_3;
+	const pName name;
+	const pAssign assign;
+	const pAssignExp expression;
 };
-class AssignExp2 : public AssignExp
+class AssignExp_Exp : public AssignExp
 {
 public:
-	AssignExp2(pExp &&sym1) : symbol_1(move(sym1)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	AssignExp_Exp(pExp &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
+	const pExp expression;
 };
 class Exp : public Symbol
 {
 public:
 	virtual ~Exp() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
-	virtual std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
 };
 inline Exp::~Exp() = default;
-class Exp1 : public Exp
+class Exp_Prec : public Exp
 {
 public:
-	Exp1(pExp &&sym1, pAdd &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Prec(pOpenP &&sym1, pExp &&sym2, pCloseP &&sym3) : open(move(sym1)), expression(move(sym2)), close(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pAdd symbol_2;
-	const pExp symbol_3;
+	const pOpenP open;
+	const pExp expression;
+	const pCloseP close;
 };
-class Exp2 : public Exp
+class Exp_CastInt : public Exp
 {
 public:
-	Exp2(pExp &&sym1, pSub &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_CastInt(pOpenP &&sym1, pIntT &&sym2, pCloseP &&sym3, pExp &&sym4) : open(move(sym1)), type(move(sym2)), close(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pSub symbol_2;
-	const pExp symbol_3;
+	const pOpenP open;
+	const pIntT type;
+	const pCloseP close;
+	const pExp expression;
 };
-class Exp3 : public Exp
+class Exp_CastDouble : public Exp
 {
 public:
-	Exp3(pExp &&sym1, pMult &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_CastDouble(pOpenP &&sym1, pDoubleT &&sym2, pCloseP &&sym3, pExp &&sym4) : open(move(sym1)), type(move(sym2)), close(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pMult symbol_2;
-	const pExp symbol_3;
+	const pOpenP open;
+	const pDoubleT type;
+	const pCloseP close;
+	const pExp expression;
 };
-class Exp4 : public Exp
+class Exp_CastBool : public Exp
 {
 public:
-	Exp4(pExp &&sym1, pDiv &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_CastBool(pOpenP &&sym1, pBoolT &&sym2, pCloseP &&sym3, pExp &&sym4) : open(move(sym1)), type(move(sym2)), close(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pDiv symbol_2;
-	const pExp symbol_3;
+	const pOpenP open;
+	const pBoolT type;
+	const pCloseP close;
+	const pExp expression;
 };
-class Exp5 : public Exp
+class Exp_Negate : public Exp
 {
 public:
-	Exp5(pOpenP &&sym1, pExp &&sym2, pCloseP &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Negate(pSub &&sym1, pExp &&sym2) : negative(move(sym1)), expression(move(sym2)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pOpenP symbol_1;
-	const pExp symbol_2;
-	const pCloseP symbol_3;
+	const pSub negative;
+	const pExp expression;
 };
-class Exp6 : public Exp
+class Exp_Add : public Exp
 {
 public:
-	Exp6(pIntL &&sym1) : symbol_1(move(sym1)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Add(pExp &&sym1, pAdd &&sym2, pExp &&sym3) : expressionL(move(sym1)), add(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pIntL symbol_1;
+	const pExp expressionL;
+	const pAdd add;
+	const pExp expressionR;
 };
-class Exp7 : public Exp
+class Exp_Sub : public Exp
 {
 public:
-	Exp7(pDoubleL &&sym1) : symbol_1(move(sym1)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Sub(pExp &&sym1, pSub &&sym2, pExp &&sym3) : expressionL(move(sym1)), sub(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pDoubleL symbol_1;
+	const pExp expressionL;
+	const pSub sub;
+	const pExp expressionR;
 };
-class Exp8 : public Exp
+class Exp_Mult : public Exp
 {
 public:
-	Exp8(pName &&sym1) : symbol_1(move(sym1)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Mult(pExp &&sym1, pMult &&sym2, pExp &&sym3) : expressionL(move(sym1)), mult(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pName symbol_1;
+	const pExp expressionL;
+	const pMult mult;
+	const pExp expressionR;
 };
-class Exp9 : public Exp
+class Exp_Div : public Exp
 {
 public:
-	Exp9(pSub &&sym1, pExp &&sym2) : symbol_1(move(sym1)), symbol_2(move(sym2)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Div(pExp &&sym1, pDiv &&sym2, pExp &&sym3) : expressionL(move(sym1)), div(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pSub symbol_1;
-	const pExp symbol_2;
+	const pExp expressionL;
+	const pDiv div;
+	const pExp expressionR;
 };
-class Exp10 : public Exp
+class Exp_Greater : public Exp
 {
 public:
-	Exp10(pOpenP &&sym1, pIntT &&sym2, pCloseP &&sym3, pExp &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Greater(pExp &&sym1, pGreater &&sym2, pExp &&sym3) : expressionL(move(sym1)), greater(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pOpenP symbol_1;
-	const pIntT symbol_2;
-	const pCloseP symbol_3;
-	const pExp symbol_4;
+	const pExp expressionL;
+	const pGreater greater;
+	const pExp expressionR;
 };
-class Exp11 : public Exp
+class Exp_Less : public Exp
 {
 public:
-	Exp11(pOpenP &&sym1, pDoubleT &&sym2, pCloseP &&sym3, pExp &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Less(pExp &&sym1, pLess &&sym2, pExp &&sym3) : expressionL(move(sym1)), less(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pOpenP symbol_1;
-	const pDoubleT symbol_2;
-	const pCloseP symbol_3;
-	const pExp symbol_4;
+	const pExp expressionL;
+	const pLess less;
+	const pExp expressionR;
 };
-class Exp12 : public Exp
+class Exp_GreaterEqual : public Exp
 {
 public:
-	Exp12(pOpenP &&sym1, pBoolT &&sym2, pCloseP &&sym3, pExp &&sym4) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)), symbol_4(move(sym4)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_GreaterEqual(pExp &&sym1, pGreaterEqual &&sym2, pExp &&sym3) : expressionL(move(sym1)), greaterEqual(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pOpenP symbol_1;
-	const pBoolT symbol_2;
-	const pCloseP symbol_3;
-	const pExp symbol_4;
+	const pExp expressionL;
+	const pGreaterEqual greaterEqual;
+	const pExp expressionR;
 };
-class Exp13 : public Exp
+class Exp_LessEqual : public Exp
 {
 public:
-	Exp13(pExp &&sym1, pEqual &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_LessEqual(pExp &&sym1, pLessEqual &&sym2, pExp &&sym3) : expressionL(move(sym1)), lessEqual(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pEqual symbol_2;
-	const pExp symbol_3;
+	const pExp expressionL;
+	const pLessEqual lessEqual;
+	const pExp expressionR;
 };
-class Exp14 : public Exp
+class Exp_Equal : public Exp
 {
 public:
-	Exp14(pExp &&sym1, pNotEqual &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Equal(pExp &&sym1, pEqual &&sym2, pExp &&sym3) : expressionL(move(sym1)), equal(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pNotEqual symbol_2;
-	const pExp symbol_3;
+	const pExp expressionL;
+	const pEqual equal;
+	const pExp expressionR;
 };
-class Exp15 : public Exp
+class Exp_NotEqual : public Exp
 {
 public:
-	Exp15(pExp &&sym1, pGreater &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_NotEqual(pExp &&sym1, pNotEqual &&sym2, pExp &&sym3) : expressionL(move(sym1)), notEqual(move(sym2)), expressionR(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pGreater symbol_2;
-	const pExp symbol_3;
+	const pExp expressionL;
+	const pNotEqual notEqual;
+	const pExp expressionR;
 };
-class Exp16 : public Exp
+class Exp_Variable : public Exp
 {
 public:
-	Exp16(pExp &&sym1, pLess &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_Variable(pName &&sym1) : name(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pLess symbol_2;
-	const pExp symbol_3;
+	const pName name;
 };
-class Exp17 : public Exp
+class Exp_LiteralInt : public Exp
 {
 public:
-	Exp17(pExp &&sym1, pGreaterEqual &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_LiteralInt(pIntL &&sym1) : literal(move(sym1)) { }
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pGreaterEqual symbol_2;
-	const pExp symbol_3;
+	const pIntL literal;
 };
-class Exp18 : public Exp
+class Exp_LiteralDouble : public Exp
 {
 public:
-	Exp18(pExp &&sym1, pLessEqual &&sym2, pExp &&sym3) : symbol_1(move(sym1)), symbol_2(move(sym2)), symbol_3(move(sym3)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_LiteralDouble(pDoubleL &&sym1) : literal(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp symbol_1;
-	const pLessEqual symbol_2;
-	const pExp symbol_3;
+	const pDoubleL literal;
 };
-class Exp19 : public Exp
+class Exp_LiteralBool : public Exp
 {
 public:
-	Exp19(pBoolL &&sym1) : symbol_1(move(sym1)) {}
-	std::tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+	Exp_LiteralBool(pBoolL &&sym1) : literal(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pBoolL symbol_1;
+	const pBoolL literal;
 };
 class Terminal : public Symbol
 {
