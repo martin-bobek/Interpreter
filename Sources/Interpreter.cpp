@@ -14,6 +14,7 @@ pCompilerError Stat1_End::Evaluate(SymTable &syms) const
 }
 pCompilerError Stat2_If::Evaluate(SymTable &syms) const
 {
+	syms.EnterScope();
 	auto[errorE, valueE] = condition->Evaluate(syms);
 	if (errorE)
 		return move(errorE);
@@ -22,23 +23,22 @@ pCompilerError Stat2_If::Evaluate(SymTable &syms) const
 		return move(errorC);
 	if (condVal)
 	{
-		syms.EnterScope();
 		pCompilerError errorS = stat2->Evaluate(syms);
 		if (errorS)
 			return errorS;
-		syms.ExitScope();
 	}
+	syms.ExitScope();
 	return pCompilerError(CompilerError::NoError);
 }
 pCompilerError Stat2_IfElse::Evaluate(SymTable &syms) const
 {
+	syms.EnterScope();
 	auto[errorE, valueE] = condition->Evaluate(syms);
 	if (errorE)
 		return move(errorE);
 	auto[errorC, condVal] = valueE.IsTrue();
 	if (errorC)
 		return move(errorC);
-	syms.EnterScope();
 	if (condVal)
 	{
 		pCompilerError errorS = statIf->Evaluate(syms);
@@ -73,40 +73,41 @@ pCompilerError Stat2_DeclBool::Evaluate(SymTable &syms) const
 {
 	return syms.Declare<bool>(name->Value());
 }
-pCompilerError Stat2_InitInt::Evaluate(SymTable &syms) const
+pCompilerError Stat2_Value::Evaluate(SymTable &syms) const
+{
+	return std::get<0>(expression->Evaluate(syms));
+}
+tuple<pCompilerError, Value> ValueExp_InitInt::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
-		return move(error);
+		return { move(error), value };
 	return syms.Initialize<int>(name->Value(), value);
 }
-pCompilerError Stat2_InitDouble::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueExp_InitDouble::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
-		return move(error);
+		return { move(error), value };
 	return syms.Initialize<double>(name->Value(), value);
 }
-pCompilerError Stat2_InitBool::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueExp_InitBool::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
-		return move(error);
+		return { move(error), value };
 	return syms.Initialize<bool>(name->Value(), value);
 }
-pCompilerError Stat2_Assign::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueExp_Assign::Evaluate(SymTable &syms) const
 {
-	auto[error, value] = expression->Evaluate(syms);
-	if (error)
-		return move(error);
-	return syms.Assign(name->Value(), value);
+	return expression->Evaluate(syms);
 }
 tuple<pCompilerError, Value> AssignExp_Chain::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
-	return syms.AssignChain(name->Value(), value);
+	return syms.Assign(name->Value(), value);
 }
 tuple<pCompilerError, Value> AssignExp_Exp::Evaluate(SymTable &syms) const
 {
@@ -289,39 +290,22 @@ template<typename T> pCompilerError SymTable::Declare(const std::string &name)
 	stack.emplace_back(name, Value::Create<T>(0));
 	return pCompilerError(CompilerError::NoError);
 }
-template<typename T> pCompilerError SymTable::Initialize(const std::string &name, Value value)
+template<typename T> tuple<pCompilerError, Value> SymTable::Initialize(const std::string &name, Value value)
 {
 	if (inCurrentScope(name))
-		return CompilerError::New("SymTable::Declare", name + " is already used in the current scope.");
+		return { CompilerError::New("SymTable::Declare", name + " is already used in the current scope."), value };
 	auto[error, valueC] = Value::Cast<T>(value);
 	if (error)
-		return move(error);
+		return { move(error), value };
 	stack.emplace_back(name, valueC);
-	return pCompilerError(CompilerError::NoError);
+	return { pCompilerError(CompilerError::NoError), valueC };
 }
-pCompilerError SymTable::Assign(const std::string &name, Value value)
+tuple<pCompilerError, Value> SymTable::Assign(const std::string &name, Value value)
 {
 	for (auto it = stack.rbegin(); it != stack.rend(); it++)
-	{
 		if (it->name == name)
-		{
-			it->value.Assign(value);
-			return pCompilerError(CompilerError::NoError);
-		}
-	}
-	return CompilerError::New("SymTable::Assign", name + " is not defined.");
-}
-tuple<pCompilerError, Value> SymTable::AssignChain(const std::string &name, Value value)
-{
-	for (auto it = stack.rbegin(); it != stack.rend(); it++)
-	{
-		if (it->name == name)
-		{
-			it->value.Assign(value);
-			return { pCompilerError(CompilerError::NoError), it->value };
-		}
-	}
-	return { CompilerError::New("SymTable::AssignChain", name + " is not defined."), value };
+			return it->value.Assign(value);
+	return { CompilerError::New("SymTable::Assign", name + " is not defined."), value };
 }
 tuple<pCompilerError, Value> SymTable::Get(const std::string &name) const
 {
@@ -400,19 +384,25 @@ template<typename T> tuple<pCompilerError, Value> Value::Cast(Value value)
 	}
 	return { CompilerError::New("","") , value };
 }
-void Value::Assign(Value value)
+tuple<pCompilerError, Value> Value::Assign(Value value)
 {
 	switch (type)
 	{
 	case INT:
+		if (value.type == BOOL)
+			return { CompilerError::New("Value::Cast", "Object of type bool cannot be cast to type int.") , *this };
 		vInt = (int)VALUE(value);
 		break;
 	case DOUBLE:
+		if (value.type == BOOL)
+			return { CompilerError::New("Value::Cast", "Object of type bool cannot be cast to type double."), *this };
 		vDouble = (double)VALUE(value);
 		break;
 	case BOOL:
 		vBool = (bool)VALUE(value);
+		break;
 	}
+	return { pCompilerError(CompilerError::NoError), *this };
 }
 tuple<pCompilerError, Value> Value::operator+(Value rhs) const
 {

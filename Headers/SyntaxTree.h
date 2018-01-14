@@ -14,6 +14,7 @@ class CompilerError;
 class Symbol;
 class Stat1;
 class Stat2;
+class ValueExp;
 class AssignExp;
 class Exp;
 class Terminal;
@@ -47,6 +48,7 @@ typedef std::unique_ptr<CompilerError> pCompilerError;
 typedef std::unique_ptr<Symbol> pSymbol;
 typedef std::unique_ptr<Stat1> pStat1;
 typedef std::unique_ptr<Stat2> pStat2;
+typedef std::unique_ptr<ValueExp> pValueExp;
 typedef std::unique_ptr<AssignExp> pAssignExp;
 typedef std::unique_ptr<Exp> pExp;
 typedef std::unique_ptr<Terminal> pTerminal;
@@ -163,7 +165,7 @@ public:
 	template<typename T> static Value Create(T value);
 	static Value Create() { return 0; }
 	template<typename T> static tuple<pCompilerError, Value> Cast(Value value);
-	void Assign(Value value);
+	tuple<pCompilerError, Value> Assign(Value value);
 	tuple<pCompilerError, Value> operator+(Value rhs) const;
 	tuple<pCompilerError, Value> operator-(Value rhs) const;
 	tuple<pCompilerError, Value> operator*(Value rhs) const;
@@ -197,9 +199,8 @@ public:
 	void EnterScope();
 	void ExitScope(); // function will fail if a scope has not previously been entered
 	template<typename T> pCompilerError Declare(const std::string &name);
-	template<typename T> pCompilerError Initialize(const std::string &name, Value value);
-	pCompilerError Assign(const std::string &name, Value value);
-	tuple<pCompilerError, Value> AssignChain(const std::string &name, Value value);
+	template<typename T> tuple<pCompilerError, Value> Initialize(const std::string &name, Value value);
+	tuple<pCompilerError, Value> Assign(const std::string &name, Value value);
 	tuple<pCompilerError, Value> Get(const std::string &name) const;
 private:
 	bool inCurrentScope(const std::string &name) const;
@@ -266,24 +267,24 @@ inline Stat2::~Stat2() = default;
 class Stat2_If : public Stat2
 {
 public:
-	Stat2_If(pIf &&sym1, pOpenP &&sym2, pAssignExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), stat2(move(sym5)) {}
+	Stat2_If(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), stat2(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIf ifKey;
 	const pOpenP open;
-	const pAssignExp condition;
+	const pValueExp condition;
 	const pCloseP close;
 	const pStat2 stat2;
 };
 class Stat2_IfElse : public Stat2
 {
 public:
-	Stat2_IfElse(pIf &&sym1, pOpenP &&sym2, pAssignExp &&sym3, pCloseP &&sym4, pStat2 &&sym5, pElse &&sym6, pStat2 &&sym7) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statIf(move(sym5)), elseKey(move(sym6)), statElse(move(sym7)) {}
+	Stat2_IfElse(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5, pElse &&sym6, pStat2 &&sym7) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statIf(move(sym5)), elseKey(move(sym6)), statElse(move(sym7)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIf ifKey;
 	const pOpenP open;
-	const pAssignExp condition;
+	const pValueExp condition;
 	const pCloseP close;
 	const pStat2 statIf;
 	const pElse elseKey;
@@ -329,52 +330,63 @@ private:
 	const pName name;
 	const pTerm end;
 };
-class Stat2_InitInt : public Stat2
+class Stat2_Value : public Stat2
 {
 public:
-	Stat2_InitInt(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
+	Stat2_Value(pValueExp &&sym1, pTerm &&sym2) : expression(move(sym1)), end(move(sym2)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
+private:
+	const pValueExp expression;
+	const pTerm end;
+};
+class ValueExp : public Symbol
+{
+public:
+	virtual ~ValueExp() = 0;
+	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+};
+inline ValueExp::~ValueExp() = default;
+class ValueExp_InitInt : public ValueExp
+{
+public:
+	ValueExp_InitInt(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pIntT type;
 	const pName name;
 	const pAssign assign;
 	const pAssignExp expression;
-	const pTerm end;
 };
-class Stat2_InitDouble : public Stat2
+class ValueExp_InitDouble : public ValueExp
 {
 public:
-	Stat2_InitDouble(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
-	pCompilerError Evaluate(SymTable &syms) const;
+	ValueExp_InitDouble(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pDoubleT type;
 	const pName name;
 	const pAssign assign;
 	const pAssignExp expression;
-	const pTerm end;
 };
-class Stat2_InitBool : public Stat2
+class ValueExp_InitBool : public ValueExp
 {
 public:
-	Stat2_InitBool(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4, pTerm &&sym5) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)), end(move(sym5)) {}
-	pCompilerError Evaluate(SymTable &syms) const;
+	ValueExp_InitBool(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pBoolT type;
 	const pName name;
 	const pAssign assign;
 	const pAssignExp expression;
-	const pTerm end;
 };
-class Stat2_Assign : public Stat2
+class ValueExp_Assign : public ValueExp
 {
 public:
-	Stat2_Assign(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3, pTerm &&sym4) : name(move(sym1)), assign(move(sym2)), expression(move(sym3)), end(move(sym4)) {}
-	pCompilerError Evaluate(SymTable &syms) const;
+	ValueExp_Assign(pAssignExp &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pName name;
-	const pAssign assign;
 	const pAssignExp expression;
-	const pTerm end;
 };
 class AssignExp : public Symbol
 {

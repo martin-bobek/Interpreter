@@ -6,10 +6,10 @@ Stat1
 	
 Stat2
 	If
-	If OpenP AssignExp CloseP Stat2
+	If OpenP ValueExp CloseP Stat2
 Stat2
 	IfElse
-	If OpenP AssignExp CloseP Stat2 Else Stat2
+	If OpenP ValueExp CloseP Stat2 Else Stat2
 Stat2
 	Scope
 	OpenB Stat1 CloseB
@@ -23,17 +23,20 @@ Stat2
 	DeclBool
 	BoolT Name Term
 Stat2
+	Value
+	ValueExp Term
+ValueExp
 	InitInt
-	IntT Name Assign AssignExp Term
-Stat2
+	IntT Name Assign AssignExp
+ValueExp
 	InitDouble
-	DoubleT Name Assign AssignExp Term
-Stat2
+	DoubleT Name Assign AssignExp
+ValueExp
 	InitBool
-	BoolT Name Assign AssignExp Term
-Stat2
+	BoolT Name Assign AssignExp
+ValueExp
 	Assign
-	Name Assign AssignExp Term
+	AssignExp
 AssignExp
 	Chain
 	Name Assign AssignExp
@@ -108,8 +111,6 @@ $
 1
 1
 1
-2
-1
 1
 1
 2
@@ -189,15 +190,6 @@ $
 1
 1
 1
-2
-2
-2
-2
-2
-2
-2
-2
-1
 1
 2
 2
@@ -209,6 +201,14 @@ $
 2
 1
 1
+2
+2
+2
+2
+2
+2
+2
+2
 1
 1
 1
@@ -239,3 +239,6 @@ $
 1
 1
 1
+1
+1
+2
