@@ -2,6 +2,8 @@ If
 if
 Else
 else
+While
+while
 BoolT
 bool
 IntT

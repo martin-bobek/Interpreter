@@ -1,244 +1,58 @@
-Stat1
-	Node
-	Stat1 Stat2
-Stat1
-	End
-	
-Stat2
-	If
-	If OpenP ValueExp CloseP Stat2
-Stat2
-	IfElse
-	If OpenP ValueExp CloseP Stat2 Else Stat2
-Stat2
-	Scope
-	OpenB Stat1 CloseB
-Stat2
-	DeclInt
-	IntT Name Term
-Stat2
-	DeclDouble
-	DoubleT Name Term
-Stat2
-	DeclBool
-	BoolT Name Term
-Stat2
-	Value
-	ValueExp Term
-ValueExp
-	InitInt
-	IntT Name Assign AssignExp
-ValueExp
-	InitDouble
-	DoubleT Name Assign AssignExp
-ValueExp
-	InitBool
-	BoolT Name Assign AssignExp
-ValueExp
-	Assign
-	AssignExp
-AssignExp
-	Chain
-	Name Assign AssignExp
-AssignExp
-	Exp
-	Exp
-Exp
-	Prec
-	OpenP Exp CloseP
-Exp
-	CastInt
-	OpenP IntT CloseP Exp
-Exp
-	CastDouble
-	OpenP DoubleT CloseP Exp
-Exp
-	CastBool
-	OpenP BoolT CloseP Exp
-Exp
-	Negate
-	Sub Exp
-Exp
-	Add
-	Exp Add Exp
-Exp
-	Sub
-	Exp Sub Exp
-Exp
-	Mult
-	Exp Mult Exp
-Exp
-	Div
-	Exp Div Exp
-Exp
-	Greater
-	Exp Greater Exp
-Exp
-	Less
-	Exp Less Exp
-Exp
-	GreaterEqual
-	Exp GreaterEqual Exp
-Exp
-	LessEqual
-	Exp LessEqual Exp
-Exp
-	Equal
-	Exp Equal Exp
-Exp
-	NotEqual
-	Exp NotEqual Exp
-Exp
-	Variable
-	Name
-Exp
-	LiteralInt
-	IntL
-Exp
-	LiteralDouble
-	DoubleL
-Exp
-	LiteralBool
-	BoolL
-$
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
-2
-1
-1
-1
-1
-1
-1
-1
-1
-2
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
-2
-2
-2
-1
-1
-1
-1
-1
-1
-2
-2
-2
-2
-1
-1
-1
-1
-1
-1
-2
-2
-2
-2
-1
-1
-1
-1
-1
-1
-2
-2
-2
-2
-1
-1
-1
-1
-1
-1
-2
-2
-2
-2
-2
-2
-2
-2
-1
-1
-2
-2
-2
-2
-2
-2
-2
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
+:Stat1 Node > Stat1 Stat2
+:Stat1 End >
+:Stat2 If > If OpenP ValueExp CloseP Stat2
+	+ Else
+:Stat2 IfElse > If OpenP ValueExp CloseP Stat2 Else Stat2
+:Stat2 While > While OpenP ValueExp CloseP Stat2
+:Stat2 Scope > OpenB Stat1 CloseB
+:Stat2 DeclInt > IntT Name Term
+:Stat2 DeclDouble > DoubleT Name Term
+:Stat2 DeclBool > BoolT Name Term
+:Stat2 Value > ValueExp Term
+:ValueExp InitInt > IntT Name Assign AssignExp
+:ValueExp InitDouble > DoubleT Name Assign AssignExp
+:ValueExp InitBool > BoolT Name Assign AssignExp
+:ValueExp Assign > AssignExp
+:AssignExp Chain > Name Assign AssignExp
+:AssignExp Exp > Exp
+:Exp Prec > OpenP Exp CloseP
+:Exp CastInt > OpenP IntT CloseP Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp CastDouble > OpenP DoubleT CloseP Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp CastBool > OpenP BoolT CloseP Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp Negate > Sub Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp Add > Exp Add Exp
+	^ Add Sub Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Mult Div
+:Exp Sub > Exp Sub Exp
+	^ Add Sub Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Mult Div
+:Exp Mult > Exp Mult Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp Div > Exp Div Exp
+	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual
+:Exp Greater > Exp Greater Exp
+	^ Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Add Sub Mult Div
+:Exp Less > Exp Less Exp
+	^ Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Add Sub Mult Div
+:Exp GreaterEqual > Exp GreaterEqual Exp
+	^ Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Add Sub Mult Div
+:Exp LessEqual > Exp LessEqual Exp
+	^ Greater Less GreaterEqual LessEqual Equal NotEqual
+	+ Add Sub Mult Div
+:Exp Equal > Exp Equal Exp
+	^ Equal NotEqual
+	+ Add Sub Mult Div Greater Less GreaterEqual LessEqual
+:Exp NotEqual > Exp NotEqual Exp
+	^ Equal NotEqual
+	+ Add Sub Mult Div Greater Less GreaterEqual LessEqual
+:Exp Variable > Name
+:Exp LiteralInt > IntL
+:Exp LiteralDouble > DoubleL
+:Exp LiteralBool > BoolL

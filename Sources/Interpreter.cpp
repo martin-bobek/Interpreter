@@ -23,7 +23,7 @@ pCompilerError Stat2_If::Evaluate(SymTable &syms) const
 		return move(errorC);
 	if (condVal)
 	{
-		pCompilerError errorS = stat2->Evaluate(syms);
+		pCompilerError errorS = statement->Evaluate(syms);
 		if (errorS)
 			return errorS;
 	}
@@ -50,6 +50,27 @@ pCompilerError Stat2_IfElse::Evaluate(SymTable &syms) const
 		pCompilerError errorS = statElse->Evaluate(syms);
 		if (errorS)
 			return errorS;
+	}
+	syms.ExitScope();
+	return pCompilerError(CompilerError::NoError);
+}
+pCompilerError Stat2_While::Evaluate(SymTable &syms) const
+{
+	while (true)
+	{
+		syms.EnterScope();
+		auto[errorE, valueE] = condition->Evaluate(syms);
+		if (errorE)
+			return move(errorE);
+		auto[errorC, condVal] = valueE.IsTrue();
+		if (errorC)
+			return move(errorC);
+		if (!condVal)
+			break;
+		pCompilerError errorS = statement->Evaluate(syms);
+		if (errorS)
+			return errorS;
+		syms.ExitScope();
 	}
 	syms.ExitScope();
 	return pCompilerError(CompilerError::NoError);

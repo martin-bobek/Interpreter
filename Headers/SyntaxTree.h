@@ -22,6 +22,7 @@ class If;
 class OpenP;
 class CloseP;
 class Else;
+class While;
 class OpenB;
 class CloseB;
 class IntT;
@@ -56,6 +57,7 @@ typedef std::unique_ptr<If> pIf;
 typedef std::unique_ptr<OpenP> pOpenP;
 typedef std::unique_ptr<CloseP> pCloseP;
 typedef std::unique_ptr<Else> pElse;
+typedef std::unique_ptr<While> pWhile;
 typedef std::unique_ptr<OpenB> pOpenB;
 typedef std::unique_ptr<CloseB> pCloseB;
 typedef std::unique_ptr<IntT> pIntT;
@@ -118,7 +120,7 @@ public:
 	std::vector<pTerminal> GetTokens() { return move(tokens); };
 	Error GetErrorReport() { return move(err); }
 private:
-	enum Type { INVALID, IF, ELSE, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
+	enum Type { INVALID, IF, ELSE, WHILE, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
 
 	static Type State_1(Iterator &it, Iterator end);
 	static Type State_2(Iterator &it, Iterator end);
@@ -154,6 +156,11 @@ private:
 	static Type State_32(Iterator &it, Iterator end);
 	static Type State_33(Iterator &it, Iterator end);
 	static Type State_34(Iterator &it, Iterator end);
+	static Type State_35(Iterator &it, Iterator end);
+	static Type State_36(Iterator &it, Iterator end);
+	static Type State_37(Iterator &it, Iterator end);
+	static Type State_38(Iterator &it, Iterator end);
+	static Type State_39(Iterator &it, Iterator end);
 
 	std::istream &in;
 	std::vector<pTerminal> tokens;
@@ -267,14 +274,14 @@ inline Stat2::~Stat2() = default;
 class Stat2_If : public Stat2
 {
 public:
-	Stat2_If(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), stat2(move(sym5)) {}
+	Stat2_If(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIf ifKey;
 	const pOpenP open;
 	const pValueExp condition;
 	const pCloseP close;
-	const pStat2 stat2;
+	const pStat2 statement;
 };
 class Stat2_IfElse : public Stat2
 {
@@ -289,6 +296,18 @@ private:
 	const pStat2 statIf;
 	const pElse elseKey;
 	const pStat2 statElse;
+};
+class Stat2_While : public Stat2
+{
+public:
+	Stat2_While(pWhile &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : whileKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
+	pCompilerError Evaluate(SymTable &syms) const;
+private:
+	const pWhile whileKey;
+	const pOpenP open;
+	const pValueExp condition;
+	const pCloseP close;
+	const pStat2 statement;
 };
 class Stat2_Scope : public Stat2
 {
@@ -632,6 +651,15 @@ public:
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
 private:
 	std::ostream &print(std::ostream &os) const { return os << "ELSE[" << value << ']'; }
+	const std::string value;
+};
+class While : public Terminal
+{
+public:
+	While(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "WHILE[" << value << ']'; }
 	const std::string value;
 };
 class BoolT : public Terminal
