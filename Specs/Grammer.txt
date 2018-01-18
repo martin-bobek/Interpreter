@@ -1,20 +1,27 @@
 :Stat1 Node > Stat1 Stat2
 :Stat1 End >
-:Stat2 If > If OpenP ValueExp CloseP Stat2
+:Stat2 If > If OpenP Cond CloseP Stat2
 	+ Else
-:Stat2 IfElse > If OpenP ValueExp CloseP Stat2 Else Stat2
-:Stat2 While > While OpenP ValueExp CloseP Stat2
+:Stat2 IfElse > If OpenP Cond CloseP Stat2 Else Stat2
+:Stat2 While > While OpenP Cond CloseP Stat2
 :Stat2 Scope > OpenB Stat1 CloseB
 :Stat2 DeclInt > IntT Name Term
 :Stat2 DeclDouble > DoubleT Name Term
 :Stat2 DeclBool > BoolT Name Term
-:Stat2 Value > ValueExp Term
-:ValueExp InitInt > IntT Name Assign AssignExp
-:ValueExp InitDouble > DoubleT Name Assign AssignExp
-:ValueExp InitBool > BoolT Name Assign AssignExp
-:ValueExp Assign > AssignExp
-:AssignExp Chain > Name Assign AssignExp
-:AssignExp Exp > Exp
+:Stat2 Value > ValueStat Term
+:Cond Exp > Exp
+:Cond Assign > ValueStat
+:ValueStat InitInt > IntT Name Assign ChainAssign
+:ValueStat InitDouble > DoubleT Name Assign ChainAssign
+:ValueStat InitBool > BoolT Name Assign ChainAssign
+:ValueStat Assign > AssignExp
+:ChainAssign Chain > AssignExp 
+:ChainAssign Exp > Exp
+:AssignExp Assign > Name Assign ChainAssign
+:AssignExp AddAssign > Name AddAssign ChainAssign
+:AssignExp SubAssign > Name SubAssign ChainAssign
+:AssignExp MultAssign > Name MultAssign ChainAssign
+:AssignExp DivAssign > Name DivAssign ChainAssign
 :Exp Prec > OpenP Exp CloseP
 :Exp CastInt > OpenP IntT CloseP Exp
 	^ Add Sub Mult Div Greater Less GreaterEqual LessEqual Equal NotEqual

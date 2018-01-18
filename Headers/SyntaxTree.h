@@ -14,7 +14,9 @@ class CompilerError;
 class Symbol;
 class Stat1;
 class Stat2;
-class ValueExp;
+class Cond;
+class ValueStat;
+class ChainAssign;
 class AssignExp;
 class Exp;
 class Terminal;
@@ -31,6 +33,10 @@ class Term;
 class DoubleT;
 class BoolT;
 class Assign;
+class AddAssign;
+class SubAssign;
+class MultAssign;
+class DivAssign;
 class Sub;
 class Add;
 class Mult;
@@ -49,7 +55,9 @@ typedef std::unique_ptr<CompilerError> pCompilerError;
 typedef std::unique_ptr<Symbol> pSymbol;
 typedef std::unique_ptr<Stat1> pStat1;
 typedef std::unique_ptr<Stat2> pStat2;
-typedef std::unique_ptr<ValueExp> pValueExp;
+typedef std::unique_ptr<Cond> pCond;
+typedef std::unique_ptr<ValueStat> pValueStat;
+typedef std::unique_ptr<ChainAssign> pChainAssign;
 typedef std::unique_ptr<AssignExp> pAssignExp;
 typedef std::unique_ptr<Exp> pExp;
 typedef std::unique_ptr<Terminal> pTerminal;
@@ -66,6 +74,10 @@ typedef std::unique_ptr<Term> pTerm;
 typedef std::unique_ptr<DoubleT> pDoubleT;
 typedef std::unique_ptr<BoolT> pBoolT;
 typedef std::unique_ptr<Assign> pAssign;
+typedef std::unique_ptr<AddAssign> pAddAssign;
+typedef std::unique_ptr<SubAssign> pSubAssign;
+typedef std::unique_ptr<MultAssign> pMultAssign;
+typedef std::unique_ptr<DivAssign> pDivAssign;
 typedef std::unique_ptr<Sub> pSub;
 typedef std::unique_ptr<Add> pAdd;
 typedef std::unique_ptr<Mult> pMult;
@@ -120,7 +132,7 @@ public:
 	std::vector<pTerminal> GetTokens() { return move(tokens); };
 	Error GetErrorReport() { return move(err); }
 private:
-	enum Type { INVALID, IF, ELSE, WHILE, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
+	enum Type { INVALID, IF, ELSE, WHILE, BOOLT, INTT, DOUBLET, TERM, OPENP, CLOSEP, OPENB, CLOSEB, ASSIGN, ADDASSIGN, SUBASSIGN, MULTASSIGN, DIVASSIGN, ADD, SUB, MULT, DIV, EQUAL, NOTEQUAL, GREATER, LESS, GREATEREQUAL, LESSEQUAL, BOOLL, INTL, DOUBLEL, NAME };
 
 	static Type State_1(Iterator &it, Iterator end);
 	static Type State_2(Iterator &it, Iterator end);
@@ -161,6 +173,10 @@ private:
 	static Type State_37(Iterator &it, Iterator end);
 	static Type State_38(Iterator &it, Iterator end);
 	static Type State_39(Iterator &it, Iterator end);
+	static Type State_40(Iterator &it, Iterator end);
+	static Type State_41(Iterator &it, Iterator end);
+	static Type State_42(Iterator &it, Iterator end);
+	static Type State_43(Iterator &it, Iterator end);
 
 	std::istream &in;
 	std::vector<pTerminal> tokens;
@@ -274,24 +290,24 @@ inline Stat2::~Stat2() = default;
 class Stat2_If : public Stat2
 {
 public:
-	Stat2_If(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
+	Stat2_If(pIf &&sym1, pOpenP &&sym2, pCond &&sym3, pCloseP &&sym4, pStat2 &&sym5) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIf ifKey;
 	const pOpenP open;
-	const pValueExp condition;
+	const pCond condition;
 	const pCloseP close;
 	const pStat2 statement;
 };
 class Stat2_IfElse : public Stat2
 {
 public:
-	Stat2_IfElse(pIf &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5, pElse &&sym6, pStat2 &&sym7) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statIf(move(sym5)), elseKey(move(sym6)), statElse(move(sym7)) {}
+	Stat2_IfElse(pIf &&sym1, pOpenP &&sym2, pCond &&sym3, pCloseP &&sym4, pStat2 &&sym5, pElse &&sym6, pStat2 &&sym7) : ifKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statIf(move(sym5)), elseKey(move(sym6)), statElse(move(sym7)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pIf ifKey;
 	const pOpenP open;
-	const pValueExp condition;
+	const pCond condition;
 	const pCloseP close;
 	const pStat2 statIf;
 	const pElse elseKey;
@@ -300,12 +316,12 @@ private:
 class Stat2_While : public Stat2
 {
 public:
-	Stat2_While(pWhile &&sym1, pOpenP &&sym2, pValueExp &&sym3, pCloseP &&sym4, pStat2 &&sym5) : whileKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
+	Stat2_While(pWhile &&sym1, pOpenP &&sym2, pCond &&sym3, pCloseP &&sym4, pStat2 &&sym5) : whileKey(move(sym1)), open(move(sym2)), condition(move(sym3)), close(move(sym4)), statement(move(sym5)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
 	const pWhile whileKey;
 	const pOpenP open;
-	const pValueExp condition;
+	const pCond condition;
 	const pCloseP close;
 	const pStat2 statement;
 };
@@ -352,60 +368,108 @@ private:
 class Stat2_Value : public Stat2
 {
 public:
-	Stat2_Value(pValueExp &&sym1, pTerm &&sym2) : expression(move(sym1)), end(move(sym2)) {}
+	Stat2_Value(pValueStat &&sym1, pTerm &&sym2) : statement(move(sym1)), end(move(sym2)) {}
 	pCompilerError Evaluate(SymTable &syms) const;
 private:
-	const pValueExp expression;
+	const pValueStat statement;
 	const pTerm end;
 };
-class ValueExp : public Symbol
+class Cond : public Symbol
 {
 public:
-	virtual ~ValueExp() = 0;
+	virtual ~Cond() = 0;
 	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
 	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
 };
-inline ValueExp::~ValueExp() = default;
-class ValueExp_InitInt : public ValueExp
+inline Cond::~Cond() = default;
+class Cond_Exp : public Cond
 {
 public:
-	ValueExp_InitInt(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	Cond_Exp(pExp &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pExp expression;
+};
+class Cond_Assign : public Cond
+{
+public:
+	Cond_Assign(pValueStat &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pValueStat expression;
+};
+class ValueStat : public Symbol
+{
+public:
+	virtual ~ValueStat() = 0;
+	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+};
+inline ValueStat::~ValueStat() = default;
+class ValueStat_InitInt : public ValueStat
+{
+public:
+	ValueStat_InitInt(pIntT &&sym1, pName &&sym2, pAssign &&sym3, pChainAssign &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pIntT type;
 	const pName name;
 	const pAssign assign;
-	const pAssignExp expression;
+	const pChainAssign expression;
 };
-class ValueExp_InitDouble : public ValueExp
+class ValueStat_InitDouble : public ValueStat
 {
 public:
-	ValueExp_InitDouble(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	ValueStat_InitDouble(pDoubleT &&sym1, pName &&sym2, pAssign &&sym3, pChainAssign &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pDoubleT type;
 	const pName name;
 	const pAssign assign;
-	const pAssignExp expression;
+	const pChainAssign expression;
 };
-class ValueExp_InitBool : public ValueExp
+class ValueStat_InitBool : public ValueStat
 {
 public:
-	ValueExp_InitBool(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pAssignExp &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
+	ValueStat_InitBool(pBoolT &&sym1, pName &&sym2, pAssign &&sym3, pChainAssign &&sym4) : type(move(sym1)), name(move(sym2)), assign(move(sym3)), expression(move(sym4)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pBoolT type;
 	const pName name;
 	const pAssign assign;
-	const pAssignExp expression;
+	const pChainAssign expression;
 };
-class ValueExp_Assign : public ValueExp
+class ValueStat_Assign : public ValueStat
 {
 public:
-	ValueExp_Assign(pAssignExp &&sym1) : expression(move(sym1)) {}
+	ValueStat_Assign(pAssignExp &&sym1) : expression(move(sym1)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pAssignExp expression;
+};
+class ChainAssign : public Symbol
+{
+public:
+	virtual ~ChainAssign() = 0;
+	static bool Process(Stack &stack, SymStack &symStack, Parser::Error &err);
+	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
+};
+inline ChainAssign::~ChainAssign() = default;
+class ChainAssign_Chain : public ChainAssign
+{
+public:
+	ChainAssign_Chain(pAssignExp &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pAssignExp expression;
+};
+class ChainAssign_Exp : public ChainAssign
+{
+public:
+	ChainAssign_Exp(pExp &&sym1) : expression(move(sym1)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pExp expression;
 };
 class AssignExp : public Symbol
 {
@@ -415,23 +479,55 @@ public:
 	virtual tuple<pCompilerError, Value> Evaluate(SymTable &syms) const = 0;
 };
 inline AssignExp::~AssignExp() = default;
-class AssignExp_Chain : public AssignExp
+class AssignExp_Assign : public AssignExp
 {
 public:
-	AssignExp_Chain(pName &&sym1, pAssign &&sym2, pAssignExp &&sym3) : name(move(sym1)), assign(move(sym2)), expression(move(sym3)) {}
+	AssignExp_Assign(pName &&sym1, pAssign &&sym2, pChainAssign &&sym3) : name(move(sym1)), assign(move(sym2)), expression(move(sym3)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
 	const pName name;
 	const pAssign assign;
-	const pAssignExp expression;
+	const pChainAssign expression;
 };
-class AssignExp_Exp : public AssignExp
+class AssignExp_AddAssign : public AssignExp
 {
 public:
-	AssignExp_Exp(pExp &&sym1) : expression(move(sym1)) {}
+	AssignExp_AddAssign(pName &&sym1, pAddAssign &&sym2, pChainAssign &&sym3) : name(move(sym1)), addAssign(move(sym2)), expression(move(sym3)) {}
 	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
 private:
-	const pExp expression;
+	const pName name;
+	const pAddAssign addAssign;
+	const pChainAssign expression;
+};
+class AssignExp_SubAssign : public AssignExp
+{
+public:
+	AssignExp_SubAssign(pName &&sym1, pSubAssign &&sym2, pChainAssign &&sym3) : name(move(sym1)), subAssign(move(sym2)), expression(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pName name;
+	const pSubAssign subAssign;
+	const pChainAssign expression;
+};
+class AssignExp_MultAssign : public AssignExp
+{
+public:
+	AssignExp_MultAssign(pName &&sym1, pMultAssign &&sym2, pChainAssign &&sym3) : name(move(sym1)), multAssign(move(sym2)), expression(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pName name;
+	const pMultAssign multAssign;
+	const pChainAssign expression;
+};
+class AssignExp_DivAssign : public AssignExp
+{
+public:
+	AssignExp_DivAssign(pName &&sym1, pDivAssign &&sym2, pChainAssign &&sym3) : name(move(sym1)), divAssign(move(sym2)), expression(move(sym3)) {}
+	tuple<pCompilerError, Value> Evaluate(SymTable &syms) const;
+private:
+	const pName name;
+	const pDivAssign divAssign;
+	const pChainAssign expression;
 };
 class Exp : public Symbol
 {
@@ -741,6 +837,42 @@ public:
 	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
 private:
 	std::ostream &print(std::ostream &os) const { return os << "ASSIGN[" << value << ']'; }
+	const std::string value;
+};
+class AddAssign : public Terminal
+{
+public:
+	AddAssign(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "ADDASSIGN[" << value << ']'; }
+	const std::string value;
+};
+class SubAssign : public Terminal
+{
+public:
+	SubAssign(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "SUBASSIGN[" << value << ']'; }
+	const std::string value;
+};
+class MultAssign : public Terminal
+{
+public:
+	MultAssign(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "MULTASSIGN[" << value << ']'; }
+	const std::string value;
+};
+class DivAssign : public Terminal
+{
+public:
+	DivAssign(std::string &&value) : value(move(value)) {}
+	bool Process(Stack &stack, SymStack &symStack, Parser::Error &err) const;
+private:
+	std::ostream &print(std::ostream &os) const { return os << "DIVASSIGN[" << value << ']'; }
 	const std::string value;
 };
 class Add : public Terminal

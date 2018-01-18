@@ -22,6 +22,14 @@ CloseB
 }
 Assign
 =
+AddAssign
++=
+SubAssign
+-=
+MultAssign
+\*=
+DivAssign
+/=
 Add
 +
 Sub

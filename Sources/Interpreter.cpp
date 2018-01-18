@@ -96,43 +96,107 @@ pCompilerError Stat2_DeclBool::Evaluate(SymTable &syms) const
 }
 pCompilerError Stat2_Value::Evaluate(SymTable &syms) const
 {
-	return std::get<0>(expression->Evaluate(syms));
+	return std::get<0>(statement->Evaluate(syms));
 }
-tuple<pCompilerError, Value> ValueExp_InitInt::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> Cond_Exp::Evaluate(SymTable &syms) const
+{
+	return expression->Evaluate(syms);
+}
+tuple<pCompilerError, Value> Cond_Assign::Evaluate(SymTable &syms) const
+{
+	return expression->Evaluate(syms);
+}
+tuple<pCompilerError, Value> ValueStat_InitInt::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
 	return syms.Initialize<int>(name->Value(), value);
 }
-tuple<pCompilerError, Value> ValueExp_InitDouble::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueStat_InitDouble::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
 	return syms.Initialize<double>(name->Value(), value);
 }
-tuple<pCompilerError, Value> ValueExp_InitBool::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueStat_InitBool::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
 	return syms.Initialize<bool>(name->Value(), value);
 }
-tuple<pCompilerError, Value> ValueExp_Assign::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ValueStat_Assign::Evaluate(SymTable &syms) const
 {
 	return expression->Evaluate(syms);
 }
-tuple<pCompilerError, Value> AssignExp_Chain::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> ChainAssign_Chain::Evaluate(SymTable &syms) const
+{
+	return expression->Evaluate(syms);
+}
+tuple<pCompilerError, Value> ChainAssign_Exp::Evaluate(SymTable &syms) const
+{
+	return expression->Evaluate(syms);
+}
+tuple<pCompilerError, Value> AssignExp_Assign::Evaluate(SymTable &syms) const
 {
 	auto[error, value] = expression->Evaluate(syms);
 	if (error)
 		return { move(error), value };
 	return syms.Assign(name->Value(), value);
 }
-tuple<pCompilerError, Value> AssignExp_Exp::Evaluate(SymTable &syms) const
+tuple<pCompilerError, Value> AssignExp_AddAssign::Evaluate(SymTable &syms) const
 {
-	return expression->Evaluate(syms);
+	auto[errorL, valueL] = syms.Get(name->Value());
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expression->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	auto[errorO, valueO] = valueL + valueR;
+	if (errorO)
+		return { move(errorO), valueL };
+	return syms.Assign(name->Value(), valueO);
+}
+tuple<pCompilerError, Value> AssignExp_SubAssign::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = syms.Get(name->Value());
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expression->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	auto[errorO, valueO] = valueL - valueR;
+	if (errorO)
+		return { move(errorO), valueL };
+	return syms.Assign(name->Value(), valueO);
+}
+tuple<pCompilerError, Value> AssignExp_MultAssign::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = syms.Get(name->Value());
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expression->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	auto[errorO, valueO] = valueL * valueR;
+	if (errorO)
+		return { move(errorO), valueL };
+	return syms.Assign(name->Value(), valueO);
+}
+tuple<pCompilerError, Value> AssignExp_DivAssign::Evaluate(SymTable &syms) const
+{
+	auto[errorL, valueL] = syms.Get(name->Value());
+	if (errorL)
+		return { move(errorL), valueL };
+	auto[errorR, valueR] = expression->Evaluate(syms);
+	if (errorR)
+		return { move(errorR), valueL };
+	auto[errorO, valueO] = valueL / valueR;
+	if (errorO)
+		return { move(errorO), valueL };
+	return syms.Assign(name->Value(), valueO);
 }
 tuple<pCompilerError, Value> Exp_Prec::Evaluate(SymTable &syms) const
 {
